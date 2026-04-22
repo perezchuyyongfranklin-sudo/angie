@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Angie</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#F5C518; --gold2:#E8A800; --gold3:#C07800;
+  --green1:#3BAA28; --green2:#277A18; --green3:#165008;
+  --blue1:#3AB8E8; --blue2:#1888C0;
+  --sky1:#4EC5F5; --sky2:#9ADEFF;
+  --white:#FFFFFF;
+  --font:'Baloo 2',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{width:100%;min-height:100vh;font-family:var(--font);background:var(--sky1);overflow-x:hidden;}
+
+/* ─── TOPBAR ─── */
+.topbar{
+  background:linear-gradient(180deg,#2E9A1A,#3DB828);
+  padding:9px 13px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:4px solid #196008;
+  position:sticky;top:0;z-index:100;
+  box-shadow:0 3px 12px rgba(0,0,0,0.28);
+}
+.logo-wrap{display:flex;align-items:center;gap:8px;}
+.logo-txt{font-family:var(--font);font-size:1.6rem;font-weight:800;color:var(--gold);text-shadow:0 2px 0 var(--gold3),0 3px 8px rgba(0,0,0,0.3);letter-spacing:0.5px;}
+.stats{display:flex;gap:7px;}
+.stat{display:flex;align-items:center;gap:5px;background:rgba(0,0,0,0.22);border-radius:20px;padding:5px 12px;border:2px solid rgba(255,255,255,0.2);}
+.stat-ic{font-size:1.05rem;}
+.stat-v{color:white;font-weight:800;font-size:0.9rem;}
+
+/* ─── TABS ─── */
+.tabs{display:flex;background:#196008;border-bottom:3px solid #0A3604;}
+.tab{flex:1;padding:8px 4px 6px;text-align:center;font-family:var(--font);font-size:0.82rem;font-weight:700;color:rgba(255,255,255,0.5);cursor:pointer;border:none;background:transparent;border-bottom:3px solid transparent;}
+.tab.on{color:white;border-bottom-color:var(--gold);margin-bottom:-3px;}
+.tabi{font-size:1.2rem;display:block;margin-bottom:1px;}
+
+/* ─── SCENE ─── */
+.scene{position:relative;width:100%;padding-bottom:72px;}
+.scene canvas{display:block;width:100%;}
+.nodes-layer{position:absolute;top:0;left:0;width:100%;pointer-events:none;}
+
+/* ─── NODOS ─── */
+.nd{
+  position:absolute;transform:translate(-50%,-50%);
+  display:flex;flex-direction:column;align-items:center;
+  cursor:pointer;pointer-events:auto;
+  transition:transform 0.12s;
+}
+.nd:active{transform:translate(-50%,-50%) scale(0.9);}
+
+.nc{
+  border-radius:50%;border:4px solid white;
+  box-shadow:0 7px 0 rgba(0,0,0,0.22),0 9px 22px rgba(0,0,0,0.18);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;
+}
+/* shine gloss */
+.nc::after{
+  content:'';position:absolute;top:6%;left:8%;width:38%;height:26%;
+  background:rgba(255,255,255,0.32);border-radius:50%;
+  transform:rotate(-28deg);
+}
+
+/* tipo de nodo */
+.tv .nc{background:radial-gradient(circle at 38% 35%,#90E070,#38AA28,#146808);}
+.ta .nc{background:radial-gradient(circle at 38% 35%,#68C8F8,#1878D0,#084890);}
+.tn .nc{background:radial-gradient(circle at 38% 35%,#FF9868,#D84028,#980808);}
+.tg .nc{background:radial-gradient(circle at 38% 35%,#A8B8C8,#587090,#304050);filter:saturate(0.6);}
+.to .nc{background:radial-gradient(circle at 38% 35%,#FFE868,#F0B818,#A07008);}
+
+/* pulso animado */
+.tv .nc{animation:pV 2.2s ease-in-out infinite;}
+.ta .nc{animation:pA 2.6s ease-in-out infinite;}
+.tn .nc{animation:pN 2s ease-in-out infinite;}
+.to .nc{animation:pO 2.4s ease-in-out infinite;}
+@keyframes pV{0%,100%{box-shadow:0 7px 0 rgba(0,0,0,.22),0 0 0 0 rgba(80,200,60,.5)}50%{box-shadow:0 7px 0 rgba(0,0,0,.22),0 0 0 14px rgba(80,200,60,0)}}
+@keyframes pA{0%,100%{box-shadow:0 7px 0 rgba(0,0,0,.22),0 0 0 0 rgba(40,150,240,.5)}50%{box-shadow:0 7px 0 rgba(0,0,0,.22),0 0 0 14px rgba(40,150,240,0)}}
+@keyframes pN{0%,100%{box-shadow:0 7px 0 rgba(0,0,0,.22),0 0 0 0 rgba(230,90,40,.5)}50%{box-shadow:0 7px 0 rgba(0,0,0,.22),0 0 0 14px rgba(230,90,40,0)}}
+@keyframes pO{0%,100%{box-shadow:0 7px 0 rgba(0,0,0,.22),0 0 0 0 rgba(240,190,20,.5)}50%{box-shadow:0 7px 0 rgba(0,0,0,.22),0 0 0 14px rgba(240,190,20,0)}}
+
+/* lock overlay */
+.nc-lock{position:absolute;inset:0;border-radius:50%;background:rgba(18,18,38,.45);display:flex;align-items:center;justify-content:center;}
+
+/* done badge */
+.nc-done{position:absolute;top:-6px;right:-6px;z-index:5;width:26px;height:26px;background:linear-gradient(135deg,#FFD700,#FFA000);border-radius:50%;border:3px solid white;display:flex;align-items:center;justify-content:center;font-size:0.75rem;box-shadow:0 2px 6px rgba(0,0,0,.25);}
+
+/* label under node */
+.nd-lbl{
+  margin-top:6px;text-align:center;
+  background:rgba(0,0,0,.5);border-radius:20px;
+  padding:4px 12px 5px;border:2px solid rgba(255,255,255,.2);
+  backdrop-filter:blur(3px);
+}
+.nd-name{font-family:var(--font);font-weight:700;font-size:0.8rem;color:white;text-shadow:0 1px 4px rgba(0,0,0,.55);display:block;line-height:1.2;}
+.nd-bdg{margin-top:3px;padding:2px 9px;border-radius:10px;font-size:0.6rem;font-weight:800;display:inline-flex;align-items:center;gap:3px;}
+.bv{background:#1E7810;color:#BBFF88;border:1.5px solid #38B020;}
+.ba{background:#104098;color:#88C8FF;border:1.5px solid #1868D0;}
+.bn{background:#900808;color:#FFBCA0;border:1.5px solid #C03828;}
+.bg{background:rgba(0,0,0,.48);color:rgba(255,255,255,.55);border:1.5px solid rgba(255,255,255,.18);}
+.bo{background:#986808;color:#FFE888;border:1.5px solid #D09018;}
+.nd-sal{display:block;font-size:0.6rem;font-weight:800;color:var(--gold);text-shadow:0 1px 3px rgba(0,0,0,.6);margin-top:1px;}
+.nd-dots{display:flex;gap:4px;justify-content:center;margin-top:4px;}
+.dot{width:8px;height:8px;border-radius:50%;border:2px solid rgba(255,255,255,.45);}
+.dot.d{background:var(--gold);border-color:var(--gold);}
+.dot.a{background:white;border-color:white;animation:dpulse 1.5s infinite;}
+.dot.p{background:transparent;}
+@keyframes dpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.45)}}
+
+/* ─── MODAL ─── */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .28s;}
+.mo.show{opacity:1;pointer-events:auto;}
+.md{width:100%;background:white;border-radius:26px 26px 0 0;padding:18px 18px 36px;transform:translateY(100%);transition:transform .36s cubic-bezier(.34,1.26,.64,1);max-height:88vh;overflow-y:auto;box-shadow:0 -6px 28px rgba(0,0,0,.22);}
+.mo.show .md{transform:translateY(0);}
+.drag{width:42px;height:5px;background:#E0E8D8;border-radius:5px;margin:0 auto 16px;}
+.mh{display:flex;align-items:center;gap:13px;margin-bottom:13px;}
+.m-ico{width:64px;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:2.4rem;flex-shrink:0;box-shadow:0 4px 14px rgba(0,0,0,.15);}
+.m-sub{font-size:0.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;}
+.m-tit{font-family:var(--font);font-size:1.3rem;font-weight:800;line-height:1.15;color:#1A2A0A;}
+/* Alex quote */
+.m-quote{display:flex;align-items:center;gap:11px;background:linear-gradient(135deg,#EDFFF0,#D0FFD8);border-radius:14px;padding:12px 14px;margin-bottom:14px;border:2px solid #90E880;}
+.m-q-ico{font-size:2.2rem;flex-shrink:0;}
+.m-q-txt{font-size:.82rem;color:#1A5010;font-weight:800;line-height:1.55;font-style:italic;}
+.m-desc{font-size:.86rem;color:#4A5A3A;line-height:1.7;margin-bottom:14px;}
+.m-fases-hd{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#8A9A7A;margin-bottom:9px;}
+.fr{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1.5px solid #F0F5E8;}
+.fr:last-child{border-bottom:none;}
+.fd{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:900;flex-shrink:0;}
+.fd.d{background:var(--gold);color:#4A2A00;}
+.fd.a{background:#38A828;color:white;}
+.fd.p{background:#F0F5E8;color:#8A9A7A;}
+.fn{font-size:.83rem;font-weight:800;color:#1A2A0A;}
+.fs2{font-size:.72rem;color:#8A9A7A;}
+.ft2{font-size:.68rem;font-weight:800;color:#5A6A4A;flex-shrink:0;}
+.m-tags{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px;}
+.m-tag{padding:5px 12px;border-radius:50px;font-size:.7rem;font-weight:800;}
+.m-xp{display:flex;align-items:center;justify-content:center;gap:5px;font-family:var(--font);font-size:.98rem;font-weight:700;color:#C08010;margin-bottom:15px;}
+.m-btn{width:100%;padding:14px;border-radius:15px;border:none;font-family:var(--font);font-size:1.08rem;font-weight:800;cursor:pointer;transition:transform .12s;}
+.m-btn:active{transform:translateY(3px);}
+.mbv{background:linear-gradient(135deg,#3DA828,#1E7010);color:white;box-shadow:0 5px 0 #0E4808;}
+.mba{background:linear-gradient(135deg,#1878D8,#0848A8);color:white;box-shadow:0 5px 0 #062870;}
+.mbn{background:linear-gradient(135deg,#D84028,#980808);color:white;box-shadow:0 5px 0 #600404;}
+.mbg{background:#EEF0E8;color:#8A9A7A;box-shadow:0 5px 0 #C0C8B0;}
+.mbo{background:linear-gradient(135deg,#F0B818,#C07808);color:#4A2800;box-shadow:0 5px 0 #884808;}
+
+/* toast */
+.toast{position:fixed;top:10%;left:50%;transform:translateX(-50%) scale(.78);z-index:800;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:20px;padding:16px 24px;text-align:center;box-shadow:0 10px 36px rgba(0,0,0,.28);opacity:0;pointer-events:none;transition:all .38s cubic-bezier(.34,1.56,.64,1);min-width:230px;border:3px solid rgba(255,255,255,.38);}
+.toast.on{opacity:1;transform:translateX(-50%) scale(1);}
+.t-ic{font-size:2.6rem;display:block;margin-bottom:5px;}
+.t-tit{font-family:var(--font);font-size:1.05rem;font-weight:800;color:#4A2800;}
+.t-sub{font-size:.73rem;color:#7A4800;margin-top:3px;font-weight:800;}
+
+.xpfl{position:fixed;font-family:var(--font);font-size:1.1rem;font-weight:800;color:var(--gold);text-shadow:0 2px 5px rgba(0,0,0,.4);animation:xpu 1.6s ease-out forwards;z-index:500;pointer-events:none;}
+@keyframes xpu{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-75px)}}
+.conf{position:absolute;border-radius:2px;animation:cfall linear forwards;}
+@keyframes cfall{0%{opacity:1;transform:translateY(-10px) rotate(0)}100%{opacity:0;transform:translateY(100vh) rotate(680deg)}}
+
+
+/* ─── CALCULADORA ─── */
+.calc-slider{width:100%;-webkit-appearance:none;appearance:none;height:8px;border-radius:4px;background:linear-gradient(90deg,#3DA828,#F5C518);outline:none;cursor:pointer;}
+.calc-slider::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#F5C518,#D89010);border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.25);cursor:pointer;}
+.calc-result{background:linear-gradient(135deg,#196008,#1050A0);border-radius:16px;padding:16px;text-align:center;color:white;margin-top:14px;}
+.calc-big{font-family:var(--font);font-size:2.2rem;font-weight:800;color:var(--gold);display:block;}
+.calc-sub{font-size:0.78rem;color:rgba(255,255,255,0.78);margin-top:4px;display:block;}
+.calc-breakdown{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
+.calc-item{background:rgba(255,255,255,0.12);border-radius:10px;padding:10px 8px;text-align:center;}
+.calc-item-v{font-family:var(--font);font-size:1rem;font-weight:800;color:white;display:block;}
+.calc-item-l{font-size:0.62rem;color:rgba(255,255,255,0.7);}
+/* ─── COMUNIDAD ─── */
+.post-card{background:white;border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.06);border:1.5px solid #E8F4E8;}
+.post-header{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.post-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.15);}
+.post-name{font-family:var(--font);font-size:0.82rem;font-weight:800;color:#1A2A0A;}
+.post-nivel{font-size:0.65rem;color:#6A9A6A;font-weight:700;}
+.post-txt{font-size:0.82rem;color:#3A4A3A;line-height:1.55;}
+.post-actions{display:flex;gap:12px;margin-top:10px;}
+.post-btn{background:none;border:none;font-size:0.72rem;color:#6A9A6A;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:4px;padding:4px 0;}
+.post-input-wrap{background:white;border-radius:14px;padding:12px;border:1.5px solid #C8E6C8;margin-bottom:12px;}
+.post-input{width:100%;border:none;outline:none;font-family:var(--font);font-size:0.85rem;color:#1A2A0A;resize:none;min-height:60px;}
+.post-send{width:100%;padding:10px;border-radius:10px;border:none;background:linear-gradient(135deg,#3DA828,#196008);color:white;font-family:var(--font);font-size:0.9rem;font-weight:800;cursor:pointer;margin-top:6px;}
+/* ─── CERTIFICADO ─── */
+.cert-wrap{background:white;border-radius:20px;margin:16px;overflow:hidden;box-shadow:0 6px 24px rgba(0,0,0,0.15);}
+.cert-border{padding:4px;background:linear-gradient(135deg,#F5C518,#3DA828,#1050A0,#F5C518);}
+.cert-inner{background:white;padding:28px 20px;text-align:center;}
+.cert-logo{font-family:var(--font);font-size:1.4rem;font-weight:800;color:#196008;margin-bottom:4px;}
+.cert-title{font-size:0.75rem;color:#94A3B8;text-transform:uppercase;letter-spacing:.1em;margin-bottom:20px;}
+.cert-main{font-family:var(--font);font-size:0.85rem;color:#4A5A4A;margin-bottom:8px;}
+.cert-name{font-family:var(--font);font-size:1.8rem;font-weight:800;color:#1A2A0A;margin-bottom:4px;border-bottom:2px solid #F5C518;padding-bottom:8px;}
+.cert-module{font-family:var(--font);font-size:1rem;font-weight:800;color:#196008;margin:12px 0 4px;}
+.cert-desc{font-size:0.75rem;color:#6A7A6A;line-height:1.5;margin-bottom:16px;}
+.cert-seal{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#F5C518,#C07800);border:4px solid #1A2A0A;display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin:0 auto 12px;box-shadow:0 4px 12px rgba(0,0,0,0.2);}
+.cert-date{font-size:0.7rem;color:#94A3B8;margin-bottom:20px;}
+.cert-download{width:100%;padding:12px;border-radius:12px;border:none;background:linear-gradient(135deg,#F5C518,#D89010);color:#4A2800;font-family:var(--font);font-size:0.95rem;font-weight:800;cursor:pointer;box-shadow:0 4px 0 #906008;}
+.cert-download:active{transform:translateY(3px);box-shadow:0 1px 0 #906008;}
+.cert-list{margin:0 16px 12px;}
+.cert-item{display:flex;align-items:center;gap:12px;background:white;border-radius:14px;padding:13px;border:1.5px solid #E8F4E8;margin-bottom:8px;box-shadow:0 2px 8px rgba(0,0,0,0.05);}
+.cert-item-ico{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;}
+.cert-item-info{flex:1;}
+.cert-item-name{font-family:var(--font);font-size:0.86rem;font-weight:800;color:#1A2A0A;display:block;}
+.cert-item-status{font-size:0.68rem;font-weight:700;margin-top:2px;display:block;}
+.cert-item-btn{font-size:0.7rem;font-weight:800;padding:5px 12px;border-radius:50px;border:none;cursor:pointer;flex-shrink:0;}
+
+/* ─── BOTTOM NAV ─── */
+.bnav{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(180deg,#2E9A1A,#175808);display:flex;border-top:4px solid #0A3804;z-index:100;box-shadow:0 -3px 12px rgba(0,0,0,.25);}
+.nbt{flex:1;padding:7px 4px 9px;text-align:center;border:none;background:transparent;cursor:pointer;}
+.nbt-ic{font-size:1.4rem;display:block;transition:transform .18s;}
+.nbt-lb{font-size:.61rem;font-family:var(--font);font-weight:700;color:rgba(255,255,255,.5);margin-top:1px;display:block;}
+.nbt.on .nbt-lb{color:var(--gold);}
+.nbt.on .nbt-ic{transform:scale(1.18);}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo-wrap">
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="16" cy="16" r="15" fill="#F5C518" stroke="#C07800" stroke-width="2"/>
+    <circle cx="16" cy="16" r="10" fill="#E8A800"/>
+    <path d="M16 8 L18.5 13.5 L24.5 14 L20 18.5 L21.5 24.5 L16 21.5 L10.5 24.5 L12 18.5 L7.5 14 L13.5 13.5 Z" fill="#FFF176" stroke="#C07800" stroke-width="0.8"/>
+    <circle cx="16" cy="16" r="3" fill="#F5C518"/>
+  </svg>
+  <span class="logo-txt">Angie</span>
+</div>
+  <div class="stats">
+    <div class="stat"><span class="stat-ic">🪙</span><span class="stat-v" id="eM">1,200</span></div>
+    <div class="stat"><span class="stat-ic">💎</span><span class="stat-v" id="eG">80</span></div>
+    <div class="stat"><span class="stat-ic">⚡</span><span class="stat-v" id="eX">350</span></div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab on" onclick="xtab(this,'n1')"><span class="tabi">🧠</span>Nivel 1</button>
+  <button class="tab" onclick="xtab(this,'n2')"><span class="tabi">💼</span>Nivel 2</button>
+  <button class="tab" onclick="xtab(this,'n3')"><span class="tabi">💰</span>Nivel 3</button>
+</div>
+
+<!-- SCENES -->
+<div class="scene" id="n1"><canvas id="c1"></canvas><div class="nodes-layer" id="nl1"></div></div>
+<div class="scene" id="n2" style="display:none"><canvas id="c2"></canvas><div class="nodes-layer" id="nl2"></div></div>
+<div class="scene" id="n3" style="display:none"><canvas id="c3"></canvas><div class="nodes-layer" id="nl3"></div></div>
+
+<!-- BOTTOM NAV -->
+<div class="bnav">
+  <button class="nbt on" onclick="xnav(this)"><span class="nbt-ic">🏠</span><span class="nbt-lb">Inicio</span></button>
+  <button class="nbt" onclick="xnav(this)"><span class="nbt-ic">📚</span><span class="nbt-lb">Lecciones</span></button>
+  <button class="nbt" onclick="xnav(this)"><span class="nbt-ic">📈</span><span class="nbt-lb">Progreso</span></button>
+  <button class="nbt" onclick="xnav(this)"><span class="nbt-ic">👤</span><span class="nbt-lb">Perfil</span></button>
+</div>
+
+<!-- ══ PANEL LECCIONES ══ -->
+<div id="panelLec" style="display:none;position:fixed;inset:0;z-index:150;background:#F0F8F0;overflow-y:auto;padding-bottom:80px;">
+  <div style="background:linear-gradient(180deg,#2E9A1A,#3DB828);padding:12px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10;border-bottom:4px solid #196008;">
+    <button onclick="cerrarPanel('panelLec')" style="width:36px;height:36px;border-radius:10px;background:rgba(0,0,0,0.2);border:none;color:white;font-size:1.1rem;cursor:pointer;">←</button>
+    <div style="font-family:'Baloo 2',sans-serif;font-weight:800;font-size:1rem;color:white;">📚 Biblioteca de Recursos</div>
+  </div>
+  <div style="margin:14px;background:linear-gradient(135deg,#196008,#2E9A1A);border-radius:18px;padding:18px;border:1px solid rgba(255,255,255,0.2);">
+    <div style="font-size:2rem;margin-bottom:8px;">📖</div>
+    <div style="font-family:'Baloo 2',sans-serif;font-size:1.1rem;font-weight:800;color:white;margin-bottom:5px;">Libros y recursos clave</div>
+    <div style="font-size:0.8rem;color:rgba(255,255,255,0.78);line-height:1.6;">Los que usan los exitosos. Todos con link directo.</div>
+  </div>
+  <div style="margin:4px 14px 8px;font-family:'Baloo 2',sans-serif;font-size:0.7rem;font-weight:800;text-transform:uppercase;background:#F5C518;color:#4A2800;display:inline-block;padding:3px 12px;border-radius:50px;">🧠 Mentalidad y Éxito</div>
+  <div style="margin:4px 14px 14px;display:flex;flex-direction:column;gap:8px;">
+    <a href="https://www.amazon.com/dp/1585424331" target="_blank" style="text-decoration:none;display:flex;gap:12px;align-items:flex-start;background:white;border-radius:14px;padding:13px;border:1.5px solid #C8E6C8;box-shadow:0 2px 8px rgba(0,0,0,0.06);"><div style="width:44px;height:44px;border-radius:11px;background:#FFF8E0;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;">📕</div><div style="flex:1;"><strong style="font-family:'Baloo 2',sans-serif;font-size:0.88rem;color:#196008;display:block;margin-bottom:2px;">Piense y Hágase Rico</strong><span style="font-size:0.72rem;color:#64748B;display:block;margin-bottom:4px;">Napoleon Hill · El clásico del éxito</span><span style="font-size:0.68rem;color:#059669;font-weight:700;">🔗 amazon.com</span></div><div style="background:#ECFDF5;color:#059669;font-size:0.62rem;font-weight:800;padding:3px 9px;border-radius:50px;flex-shrink:0;align-self:flex-start;">Q.70</div></a>
+    <a href="https://www.amazon.com/dp/0735211299" target="_blank" style="text-decoration:none;display:flex;gap:12px;align-items:flex-start;background:white;border-radius:14px;padding:13px;border:1.5px solid #C8E6C8;box-shadow:0 2px 8px rgba(0,0,0,0.06);"><div style="width:44px;height:44px;border-radius:11px;background:#E8F5E9;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;">⚙️</div><div style="flex:1;"><strong style="font-family:'Baloo 2',sans-serif;font-size:0.88rem;color:#196008;display:block;margin-bottom:2px;">Hábitos Atómicos</strong><span style="font-size:0.72rem;color:#64748B;display:block;margin-bottom:4px;">James Clear · Los microhábitos que cambian todo</span><span style="font-size:0.68rem;color:#059669;font-weight:700;">🔗 amazon.com</span></div><div style="background:#FFFBEB;color:#D97706;font-size:0.62rem;font-weight:800;padding:3px 9px;border-radius:50px;flex-shrink:0;align-self:flex-start;">Q.90</div></a>
+    <a href="https://www.amazon.com/dp/1612680194" target="_blank" style="text-decoration:none;display:flex;gap:12px;align-items:flex-start;background:white;border-radius:14px;padding:13px;border:1.5px solid #C8E6C8;box-shadow:0 2px 8px rgba(0,0,0,0.06);"><div style="width:44px;height:44px;border-radius:11px;background:#FFFBEB;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;">💰</div><div style="flex:1;"><strong style="font-family:'Baloo 2',sans-serif;font-size:0.88rem;color:#196008;display:block;margin-bottom:2px;">Padre Rico, Padre Pobre</strong><span style="font-size:0.72rem;color:#64748B;display:block;margin-bottom:4px;">Robert Kiyosaki · Educación financiera</span><span style="font-size:0.68rem;color:#059669;font-weight:700;">🔗 amazon.com</span></div><div style="background:#FFFBEB;color:#D97706;font-size:0.62rem;font-weight:800;padding:3px 9px;border-radius:50px;flex-shrink:0;align-self:flex-start;">Q.85</div></a>
+  </div>
+  <div style="margin:4px 14px 8px;font-family:'Baloo 2',sans-serif;font-size:0.7rem;font-weight:800;text-transform:uppercase;background:#BBDEFB;color:#1050A0;display:inline-block;padding:3px 12px;border-radius:50px;">💼 Habilidades Gratuitas</div>
+  <div style="margin:4px 14px 14px;display:flex;flex-direction:column;gap:8px;">
+    <a href="https://learn.microsoft.com/es-es/training/paths/beginner-excel/" target="_blank" style="text-decoration:none;display:flex;gap:12px;align-items:flex-start;background:white;border-radius:14px;padding:13px;border:1.5px solid #BBDEFB;box-shadow:0 2px 8px rgba(0,0,0,0.06);"><div style="width:44px;height:44px;border-radius:11px;background:#E3F2FD;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;">📊</div><div style="flex:1;"><strong style="font-family:'Baloo 2',sans-serif;font-size:0.88rem;color:#1050A0;display:block;margin-bottom:2px;">Microsoft Learn — Excel Oficial</strong><span style="font-size:0.72rem;color:#64748B;display:block;margin-bottom:4px;">Microsoft · Curso completo y gratuito</span><span style="font-size:0.68rem;color:#1565C0;font-weight:700;">🔗 learn.microsoft.com</span></div><div style="background:#EEF4FF;color:#1565C0;font-size:0.62rem;font-weight:800;padding:3px 9px;border-radius:50px;flex-shrink:0;align-self:flex-start;">GRATIS</div></a>
+    <a href="https://efset.org/es" target="_blank" style="text-decoration:none;display:flex;gap:12px;align-items:flex-start;background:white;border-radius:14px;padding:13px;border:1.5px solid #BBDEFB;box-shadow:0 2px 8px rgba(0,0,0,0.06);"><div style="width:44px;height:44px;border-radius:11px;background:#E8F5E9;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;">🗣️</div><div style="flex:1;"><strong style="font-family:'Baloo 2',sans-serif;font-size:0.88rem;color:#1050A0;display:block;margin-bottom:2px;">EF SET — Test de Inglés Gratis</strong><span style="font-size:0.72rem;color:#64748B;display:block;margin-bottom:4px;">Certificado A1-C2 reconocido mundialmente</span><span style="font-size:0.68rem;color:#1565C0;font-weight:700;">🔗 efset.org/es</span></div><div style="background:#EEF4FF;color:#1565C0;font-size:0.62rem;font-weight:800;padding:3px 9px;border-radius:50px;flex-shrink:0;align-self:flex-start;">GRATIS</div></a>
+    <a href="https://academy.hubspot.com/es" target="_blank" style="text-decoration:none;display:flex;gap:12px;align-items:flex-start;background:white;border-radius:14px;padding:13px;border:1.5px solid #BBDEFB;box-shadow:0 2px 8px rgba(0,0,0,0.06);"><div style="width:44px;height:44px;border-radius:11px;background:#FFF3E0;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;">🏆</div><div style="flex:1;"><strong style="font-family:'Baloo 2',sans-serif;font-size:0.88rem;color:#1050A0;display:block;margin-bottom:2px;">HubSpot Academy</strong><span style="font-size:0.72rem;color:#64748B;display:block;margin-bottom:4px;">Ventas y Marketing · Certificados gratis</span><span style="font-size:0.68rem;color:#1565C0;font-weight:700;">🔗 academy.hubspot.com/es</span></div><div style="background:#EEF4FF;color:#1565C0;font-size:0.62rem;font-weight:800;padding:3px 9px;border-radius:50px;flex-shrink:0;align-self:flex-start;">GRATIS</div></a>
+  </div>
+</div>
+
+<!-- ══ PANEL PROGRESO ══ -->
+<div id="panelProg" style="display:none;position:fixed;inset:0;z-index:150;background:linear-gradient(180deg,#196008,#2E9A1A 40%,#87CEEB);overflow-y:auto;padding-bottom:80px;">
+  <div style="background:linear-gradient(180deg,#2E9A1A,#3DB828);padding:12px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10;border-bottom:4px solid #196008;">
+    <button onclick="cerrarPanel('panelProg')" style="width:36px;height:36px;border-radius:10px;background:rgba(0,0,0,0.2);border:none;color:white;font-size:1.1rem;cursor:pointer;">←</button>
+    <div style="font-family:'Baloo 2',sans-serif;font-weight:800;font-size:1rem;color:white;">📈 Mi Progreso</div>
+  </div>
+  <!-- Quick access cards -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 14px 0;">
+    <button onclick="showPanel('panelCalc')" style="background:linear-gradient(135deg,#196008,#1050A0);border-radius:14px;padding:14px;border:none;cursor:pointer;text-align:left;">
+      <div style="font-size:1.6rem;margin-bottom:5px;">📊</div>
+      <div style="font-family:'Baloo 2',sans-serif;font-size:0.82rem;font-weight:800;color:white;">Calculadora</div>
+      <div style="font-size:0.68rem;color:rgba(255,255,255,0.75);">¿Cuánto puedo ganar?</div>
+    </button>
+    <button onclick="showPanel('panelCom')" style="background:linear-gradient(135deg,#1050A0,#7C3AED);border-radius:14px;padding:14px;border:none;cursor:pointer;text-align:left;">
+      <div style="font-size:1.6rem;margin-bottom:5px;">💬</div>
+      <div style="font-family:'Baloo 2',sans-serif;font-size:0.82rem;font-weight:800;color:white;">Comunidad</div>
+      <div style="font-size:0.68rem;color:rgba(255,255,255,0.75);">Conectá con otros</div>
+    </button>
+    <button onclick="showPanel('panelCert')" style="background:linear-gradient(135deg,#D89010,#196008);border-radius:14px;padding:14px;border:none;cursor:pointer;text-align:left;">
+      <div style="font-size:1.6rem;margin-bottom:5px;">🎓</div>
+      <div style="font-family:'Baloo 2',sans-serif;font-size:0.82rem;font-weight:800;color:white;">Certificados</div>
+      <div style="font-size:0.68rem;color:rgba(255,255,255,0.75);">Tus logros oficiales</div>
+    </button>
+    <button onclick="showPanel('panelLec')" style="background:linear-gradient(135deg,#7C3AED,#1050A0);border-radius:14px;padding:14px;border:none;cursor:pointer;text-align:left;">
+      <div style="font-size:1.6rem;margin-bottom:5px;">📚</div>
+      <div style="font-family:'Baloo 2',sans-serif;font-size:0.82rem;font-weight:800;color:white;">Biblioteca</div>
+      <div style="font-size:0.68rem;color:rgba(255,255,255,0.75);">Libros y recursos</div>
+    </button>
+  </div>
+  <div style="margin:14px;background:white;border-radius:20px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,0.12);">
+    <div style="background:linear-gradient(135deg,#196008,#1050A0);padding:24px 20px;text-align:center;">
+      <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#F5C518,#D89010);border:4px solid white;display:flex;align-items:center;justify-content:center;font-size:2.2rem;margin:0 auto 10px;box-shadow:0 4px 12px rgba(0,0,0,0.2);">🌟</div>
+      <div style="font-family:'Baloo 2',sans-serif;font-size:1.1rem;font-weight:800;color:white;margin-bottom:4px;">Angie — Tu Camino</div>
+      <div style="font-size:0.75rem;color:rgba(255,255,255,0.75);">Nivel 1 de 9 activo</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;">
+      <div style="padding:16px 8px;text-align:center;border-right:1px solid #F1F5F9;"><span id="prgXP" style="font-family:'Baloo 2',sans-serif;font-size:1.4rem;font-weight:800;color:#196008;display:block;">350</span><span style="font-size:0.65rem;color:#94A3B8;font-weight:700;">XP Total</span></div>
+      <div style="padding:16px 8px;text-align:center;border-right:1px solid #F1F5F9;"><span id="prgGem" style="font-family:'Baloo 2',sans-serif;font-size:1.4rem;font-weight:800;color:#196008;display:block;">80</span><span style="font-size:0.65rem;color:#94A3B8;font-weight:700;">Gemas</span></div>
+      <div style="padding:16px 8px;text-align:center;"><span id="prgMods" style="font-family:'Baloo 2',sans-serif;font-size:1.4rem;font-weight:800;color:#196008;display:block;">1</span><span style="font-size:0.65rem;color:#94A3B8;font-weight:700;">Módulos</span></div>
+    </div>
+  </div>
+  <div style="margin:0 16px 16px;background:white;border-radius:16px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+    <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span style="font-family:'Baloo 2',sans-serif;font-size:0.82rem;font-weight:700;color:#196008;">Progreso global</span><strong id="prgPct" style="font-family:'Baloo 2',sans-serif;font-size:0.82rem;font-weight:800;color:#D97706;">11%</strong></div>
+    <div style="height:14px;background:#E2E8F0;border-radius:8px;overflow:hidden;"><div id="prgBar" style="height:100%;border-radius:8px;background:linear-gradient(90deg,#3DA828,#F5C518);width:11%;transition:width 0.8s;"></div></div>
+    <div style="font-size:0.7rem;color:#94A3B8;text-align:center;margin-top:6px;">Nivel 1 de 9 · Q.0 → Q.1,000,000</div>
+  </div>
+  <div style="margin:0 16px 12px;background:white;border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+    <div style="font-family:'Baloo 2',sans-serif;font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#94A3B8;padding:14px 16px 8px;">LOGROS</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 14px 16px;">
+      <div style="background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border-radius:12px;padding:12px 6px;text-align:center;border:1.5px solid #F5C518;"><span style="font-size:1.5rem;display:block;margin-bottom:4px;">🚀</span><span style="font-size:0.6rem;font-weight:800;color:#D97706;">Primer Paso</span></div>
+      <div style="background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border-radius:12px;padding:12px 6px;text-align:center;border:1.5px solid #F5C518;"><span style="font-size:1.5rem;display:block;margin-bottom:4px;">🗺️</span><span style="font-size:0.6rem;font-weight:800;color:#D97706;">Explorador</span></div>
+      <div style="background:#F8FAFC;border-radius:12px;padding:12px 6px;text-align:center;border:1.5px solid #E2E8F0;"><span style="font-size:1.5rem;display:block;margin-bottom:4px;">🔒</span><span style="font-size:0.6rem;font-weight:800;color:#94A3B8;">Bilingüe</span></div>
+      <div style="background:#F8FAFC;border-radius:12px;padding:12px 6px;text-align:center;border:1.5px solid #E2E8F0;"><span style="font-size:1.5rem;display:block;margin-bottom:4px;">🔒</span><span style="font-size:0.6rem;font-weight:800;color:#94A3B8;">Freelancer</span></div>
+      <div style="background:#F8FAFC;border-radius:12px;padding:12px 6px;text-align:center;border:1.5px solid #E2E8F0;"><span style="font-size:1.5rem;display:block;margin-bottom:4px;">🔒</span><span style="font-size:0.6rem;font-weight:800;color:#94A3B8;">Remoto</span></div>
+      <div style="background:#F8FAFC;border-radius:12px;padding:12px 6px;text-align:center;border:1.5px solid #E2E8F0;"><span style="font-size:1.5rem;display:block;margin-bottom:4px;">🔒</span><span style="font-size:0.6rem;font-weight:800;color:#94A3B8;">Inversor</span></div>
+      <div style="background:#F8FAFC;border-radius:12px;padding:12px 6px;text-align:center;border:1.5px solid #E2E8F0;"><span style="font-size:1.5rem;display:block;margin-bottom:4px;">🔒</span><span style="font-size:0.6rem;font-weight:800;color:#94A3B8;">Empresario</span></div>
+      <div style="background:#F8FAFC;border-radius:12px;padding:12px 6px;text-align:center;border:1.5px solid #E2E8F0;"><span style="font-size:1.5rem;display:block;margin-bottom:4px;">🔒</span><span style="font-size:0.6rem;font-weight:800;color:#94A3B8;">Millonario</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PANEL PERFIL ══ -->
+<div id="panelPerf" style="display:none;position:fixed;inset:0;z-index:150;background:linear-gradient(180deg,#196008,#2E9A1A 40%,#87CEEB);overflow-y:auto;padding-bottom:80px;">
+  <div style="background:linear-gradient(135deg,#196008,#1050A0);padding:12px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10;border-bottom:4px solid #0A3204;">
+    <button onclick="cerrarPanel('panelPerf')" style="width:36px;height:36px;border-radius:10px;background:rgba(0,0,0,0.2);border:none;color:white;font-size:1.1rem;cursor:pointer;">←</button>
+    <div style="font-family:'Baloo 2',sans-serif;font-weight:800;font-size:1rem;color:white;">👤 Mi Perfil</div>
+  </div>
+  <!-- Quick access cards -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 14px 0;">
+    <button onclick="showPanel('panelCalc')" style="background:linear-gradient(135deg,#196008,#1050A0);border-radius:14px;padding:14px;border:none;cursor:pointer;text-align:left;">
+      <div style="font-size:1.6rem;margin-bottom:5px;">📊</div>
+      <div style="font-family:'Baloo 2',sans-serif;font-size:0.82rem;font-weight:800;color:white;">Calculadora</div>
+      <div style="font-size:0.68rem;color:rgba(255,255,255,0.75);">¿Cuánto puedo ganar?</div>
+    </button>
+    <button onclick="showPanel('panelCom')" style="background:linear-gradient(135deg,#1050A0,#7C3AED);border-radius:14px;padding:14px;border:none;cursor:pointer;text-align:left;">
+      <div style="font-size:1.6rem;margin-bottom:5px;">💬</div>
+      <div style="font-family:'Baloo 2',sans-serif;font-size:0.82rem;font-weight:800;color:white;">Comunidad</div>
+      <div style="font-size:0.68rem;color:rgba(255,255,255,0.75);">Conectá con otros</div>
+    </button>
+    <button onclick="showPanel('panelCert')" style="background:linear-gradient(135deg,#D89010,#196008);border-radius:14px;padding:14px;border:none;cursor:pointer;text-align:left;">
+      <div style="font-size:1.6rem;margin-bottom:5px;">🎓</div>
+      <div style="font-family:'Baloo 2',sans-serif;font-size:0.82rem;font-weight:800;color:white;">Certificados</div>
+      <div style="font-size:0.68rem;color:rgba(255,255,255,0.75);">Tus logros oficiales</div>
+    </button>
+    <button onclick="showPanel('panelLec')" style="background:linear-gradient(135deg,#7C3AED,#1050A0);border-radius:14px;padding:14px;border:none;cursor:pointer;text-align:left;">
+      <div style="font-size:1.6rem;margin-bottom:5px;">📚</div>
+      <div style="font-family:'Baloo 2',sans-serif;font-size:0.82rem;font-weight:800;color:white;">Biblioteca</div>
+      <div style="font-size:0.68rem;color:rgba(255,255,255,0.75);">Libros y recursos</div>
+    </button>
+  </div>
+  <div style="margin:14px;background:white;border-radius:20px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,0.12);">
+    <div style="background:linear-gradient(135deg,#196008,#1050A0);padding:28px 20px;text-align:center;">
+      <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#F5C518,#D89010);border:4px solid white;display:flex;align-items:center;justify-content:center;font-size:2.4rem;margin:0 auto 12px;box-shadow:0 4px 12px rgba(0,0,0,0.2);">🦁</div>
+      <div style="font-family:'Baloo 2',sans-serif;font-size:1.2rem;font-weight:800;color:white;margin-bottom:4px;">¡Bienvenido a Angie!</div>
+      <div style="font-size:0.75rem;color:rgba(255,255,255,0.75);">Nivel 1 — Mentalidad y Fundamentos</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;">
+      <div style="padding:16px 8px;text-align:center;border-right:1px solid #F1F5F9;"><span id="perfXP" style="font-family:'Baloo 2',sans-serif;font-size:1.4rem;font-weight:800;color:#196008;display:block;">350</span><span style="font-size:0.65rem;color:#94A3B8;font-weight:700;">XP Total</span></div>
+      <div style="padding:16px 8px;text-align:center;border-right:1px solid #F1F5F9;"><span id="perfGem" style="font-family:'Baloo 2',sans-serif;font-size:1.4rem;font-weight:800;color:#196008;display:block;">80</span><span style="font-size:0.65rem;color:#94A3B8;font-weight:700;">💎 Gemas</span></div>
+      <div style="padding:16px 8px;text-align:center;"><span id="perfMon" style="font-family:'Baloo 2',sans-serif;font-size:1.4rem;font-weight:800;color:#196008;display:block;">1,200</span><span style="font-size:0.65rem;color:#94A3B8;font-weight:700;">🪙 Monedas</span></div>
+    </div>
+  </div>
+  <div style="margin:0 16px 12px;background:white;border-radius:16px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+    <div style="font-family:'Baloo 2',sans-serif;font-size:0.82rem;font-weight:800;color:#196008;margin-bottom:10px;">🎯 Tu camino: Q.0 → Q.1,000,000</div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#ECFDF5;border-radius:10px;border:1.5px solid #A0E890;"><span style="font-size:0.82rem;font-weight:800;color:#196008;">🧠 Nivel 1 — Mentalidad</span><span style="font-size:0.7rem;font-weight:800;background:#196008;color:white;padding:2px 10px;border-radius:50px;">En curso</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#F8FAFC;border-radius:10px;border:1.5px solid #E2E8F0;"><span style="font-size:0.82rem;font-weight:800;color:#94A3B8;">💼 Nivel 2 — Habilidades</span><span style="font-size:0.7rem;font-weight:800;background:#E2E8F0;color:#94A3B8;padding:2px 10px;border-radius:50px;">🔒</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#F8FAFC;border-radius:10px;border:1.5px solid #E2E8F0;"><span style="font-size:0.82rem;font-weight:800;color:#94A3B8;">💰 Nivel 3 — Primer Ingreso</span><span style="font-size:0.7rem;font-weight:800;background:#E2E8F0;color:#94A3B8;padding:2px 10px;border-radius:50px;">🔒</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#F8FAFC;border-radius:10px;border:1.5px solid #E2E8F0;"><span style="font-size:0.82rem;font-weight:800;color:#94A3B8;">📦 Nivel 4 al 9</span><span style="font-size:0.7rem;font-weight:800;background:#E2E8F0;color:#94A3B8;padding:2px 10px;border-radius:50px;">🔒 Próximamente</span></div>
+    </div>
+  </div>
+  <!-- Quick actions in perfil -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 16px 16px;">
+    <button onclick="showPanel('panelCalc')" style="background:white;border-radius:14px;padding:14px;border:1.5px solid #C8E6C8;cursor:pointer;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+      <div style="font-size:1.5rem;margin-bottom:4px;">📊</div>
+      <div style="font-family:'Baloo 2',sans-serif;font-size:0.78rem;font-weight:800;color:#196008;">Calculadora</div>
+    </button>
+    <button onclick="showPanel('panelCom')" style="background:white;border-radius:14px;padding:14px;border:1.5px solid #C8E6C8;cursor:pointer;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+      <div style="font-size:1.5rem;margin-bottom:4px;">💬</div>
+      <div style="font-family:'Baloo 2',sans-serif;font-size:0.78rem;font-weight:800;color:#196008;">Comunidad</div>
+    </button>
+    <button onclick="showPanel('panelCert')" style="background:white;border-radius:14px;padding:14px;border:1.5px solid #C8E6C8;cursor:pointer;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+      <div style="font-size:1.5rem;margin-bottom:4px;">🎓</div>
+      <div style="font-family:'Baloo 2',sans-serif;font-size:0.78rem;font-weight:800;color:#196008;">Certificados</div>
+    </button>
+    <button onclick="showPanel('panelLec')" style="background:white;border-radius:14px;padding:14px;border:1.5px solid #C8E6C8;cursor:pointer;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+      <div style="font-size:1.5rem;margin-bottom:4px;">📚</div>
+      <div style="font-family:'Baloo 2',sans-serif;font-size:0.78rem;font-weight:800;color:#196008;">Biblioteca</div>
+    </button>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="mo" id="mo" onclick="if(event.target===this)cMod()">
+<div class="md">
+  <div class="drag"></div>
+  <div class="mh"><div class="m-ico" id="mIco"></div><div><div class="m-sub" id="mSub"></div><div class="m-tit" id="mTit"></div></div></div>
+  <div class="m-quote"><span class="m-q-ico">🧑‍💼</span><p class="m-q-txt" id="mQ"></p></div>
+  <div class="m-desc" id="mDesc"></div>
+  <div id="mFW" style="display:none;margin-bottom:14px"><div class="m-fases-hd">Fases del camino</div><div id="mFas"></div></div>
+  <div class="m-tags" id="mTags"></div>
+  <div class="m-xp" id="mXP"></div>
+  <button class="m-btn" id="mBtn" onclick="accion()"></button>
+</div>
+</div>
+
+<!-- TOAST & CONFETTI -->
+<div class="toast" id="toast"><span class="t-ic" id="tIco">🎉</span><div class="t-tit" id="tTit"></div><div class="t-sub" id="tSub"></div></div>
+<div id="cW" style="position:fixed;inset:0;pointer-events:none;z-index:900;overflow:hidden;"></div>
+
+<script>
+// ══ STATE ══════════════════════════════════════════════════
+var G = { mon:1200, gem:80, xp:350, comp:['accion'] };
+var cur = null;
+
+// ══ QUOTES ═════════════════════════════════════════════════
+var Q = {
+  lock:'¡Cada paso tiene su momento! Seguí el camino y llegás más lejos. 💪',
+  accion:'¡Ya completaste esto! Del conocimiento a la acción — ese fue el gran salto. 🚀',
+  entorno:'El entorno lo cambia todo. Yo también tuve que cambiar el mío primero. 🤝',
+  persistencia:'Hubo momentos difíciles. La persistencia siempre marca la diferencia. 🏔️',
+  ingles:'El inglés me abrió oportunidades que ni imaginaba. ¡Vale cada minuto! 🗣️',
+  excel:'Con Excel conseguí mi primer trabajo bien pagado. ¡La habilidad más pedida! 📊',
+  ventas:'Vender es la habilidad más valiosa del mundo. Todo en la vida es ventas. 💰',
+  marketing:'El marketing digital es el megáfono de cualquier negocio moderno. 📱',
+  powerbi:'Quien analiza datos toma mejores decisiones — y gana más. 📈',
+  conta:'La contabilidad es el idioma del dinero. Quien lo entiende, lo controla. 🧮',
+  habitos:'Los grandes resultados son la suma de pequeñas acciones repetidas cada día. ⚙️',
+  metas:'Una meta sin fecha es solo un sueño. Con fecha y plan es un compromiso. 🎯',
+  mentalidad:'Tu mente es tu herramienta más poderosa — y también tu mayor obstáculo. 🧠',
+  callcenter:'El call center fue mi primer gran salario. Solo necesitaba inglés. 🎧',
+  freelance:'Empecé cobrando poco. Con constancia llegué a 5 clientes fijos. 📊',
+  remoto:'Trabajar internacionalmente desde casa fue un cambio total de vida. 🌍',
+  ventasbil:'Ventas + inglés = la combinación más poderosa del mercado laboral. 💼',
+  contfreelance:'4 clientes de contabilidad freelance pueden cambiar tu mes. 🧮'
+};
+
+// ══ MODS ═══════════════════════════════════════════════════
+var MODS = {
+  lock:{i:'🔒',bg:'linear-gradient(135deg,#607890,#385060)',sub:'BLOQUEADO',sc:'#7090A8',tit:'Contenido bloqueado',desc:'Completá los módulos anteriores para desbloquear. El orden del camino importa para tu progreso.',tags:[{t:'🔒 Seguí el camino',b:'#EEF2F5',c:'#6080A0'}],xp:'🔒 El siguiente paso te espera abajo',btn:'🔒 Bloqueado',bc:'mbg',st:'lock',fs:null},
+  accion:{i:'🚀',bg:'linear-gradient(135deg,#F5C518,#D89010)',sub:'MÓDULO 7 · NIVEL 1',sc:'#B07008',tit:'Acción Masiva y Enfoque',desc:'Ya completaste este módulo. Del conocimiento a la acción — ese salto lo separa todo.',tags:[{t:'✓ Completado',b:'#ECFDF5',c:'#059669'},{t:'+50 XP',b:'#FFFBEB',c:'#D97706'}],xp:'🏆 Insignia desbloqueada',btn:'Ver mi insignia 🎖️',bc:'mbo',st:'comp',fs:null},
+  entorno:{i:'🤝',bg:'linear-gradient(135deg,#1878D8,#0848A8)',sub:'MÓDULO 6 · NIVEL 1',sc:'#1060C0',tit:'Entorno y Relaciones',desc:'Sos el promedio de las 5 personas con quienes más tiempo pasás. Construí deliberadamente un entorno que te impulse — contactos, grupos, mentores.',tags:[{t:'Desbloqueado',b:'#EEF4FF',c:'#1565C0'},{t:'+50 XP',b:'#FFFBEB',c:'#D97706'},{t:'5-7 min',b:'#ECFDF5',c:'#059669'}],xp:'💎 Gana 2 Gemas al completar',btn:'Iniciar módulo ▶',bc:'mba',st:'libre',
+    fs:[{d:'p',n:'Auditoría de tu círculo',s:'Tarea: lista las 5 personas con quienes más tiempo pasás y su impacto en vos',t:'Hoy'},{d:'p',n:'Grupos de crecimiento',s:'Únete a comunidades: LinkedIn grupos, Meetup.com, grupos de emprendimiento',t:'Esta semana'},{d:'p',n:'Libro recomendado',s:'Never Eat Alone — Keith Ferrazzi (networking estratégico)',t:'amazon.com'},{d:'p',n:'Mentores y modelos a seguir',s:'Identifica 3 personas que ya lograron lo que querés — síguelas en LinkedIn',t:'Tarea'},{d:'p',n:'Desafío final',s:'Conectá con 1 persona nueva esta semana que esté más avanzada que vos',t:'7 días'}]},
+  persistencia:{i:'🏔️',bg:'linear-gradient(135deg,#3DA828,#1E7010)',sub:'MÓDULO 5 · NIVEL 1',sc:'#307018',tit:'Persistencia y Resiliencia',desc:'El fracaso no es el final — es información. Desarrolla la resiliencia mental que separa a quienes llegan de quienes se quedan a mitad del camino.',tags:[{t:'¡Empieza aquí!',b:'#ECFDF5',c:'#059669'},{t:'+50 XP',b:'#FFFBEB',c:'#D97706'},{t:'5-7 min',b:'#EEF4FF',c:'#1565C0'}],xp:'⚡ Requiere 1 energía',btn:'Empezar ahora 🚀',bc:'mbv',st:'libre',
+    fs:[{d:'p',n:'El ciclo del fracaso productivo',s:'Tarea: escribe 1 fracaso pasado y qué aprendiste. El fracaso es parte del proceso.',t:'Reflexión'},{d:'p',n:'Técnica 5 minutos',s:'Cuando querás abandonar, comprometete solo con 5 minutos más. Siempre.',t:'Técnica'},{d:'p',n:'Libro: Grit de Angela Duckworth',s:'La ciencia detrás de la perseverancia — gratis resumen en YouTube',t:'youtube.com'},{d:'p',n:'Diario de resiliencia',s:'Escribe cada noche: 1 obstáculo del día + cómo lo superaste',t:'Hábito diario'},{d:'p',n:'Comunidad de apoyo',s:'Comparte tu desafío actual en el foro de Angie — no estás solo',t:'Conectar'}]},
+  habitos:{i:'⚙️',bg:'linear-gradient(135deg,#9B59B6,#6C3483)',sub:'MÓDULO 4 · NIVEL 1',sc:'#7D3C98',tit:'Disciplina y Hábitos Diarios',desc:'Los grandes resultados son la suma de pequeñas acciones repetidas. Aprende a construir hábitos que trabajen para vos incluso cuando no tenés motivación.',tags:[{t:'Completa Persistencia',b:'#F3E5F5',c:'#7D3C98'},{t:'+50 XP',b:'#FFFBEB',c:'#D97706'},{t:'21 días',b:'#ECFDF5',c:'#059669'}],xp:'⭐ +50 XP · Insignia Disciplina',btn:'Iniciar módulo ▶',bc:'mbv',st:'libre',
+    fs:[{d:'p',n:'La regla de los 2 minutos',s:'Si tarda menos de 2 min, hacelo ahora. Base del sistema de hábitos.',t:'Técnica clave'},{d:'p',n:'Tu rutina matutina de 20 min',s:'Tarea: diseña tu rutina: ejercicio 7 min + revisión de metas + lectura',t:'Diseñar hoy'},{d:'p',n:'Libro: Hábitos Atómicos',s:'James Clear — amazon.com · El libro más completo sobre hábitos',t:'Q.90'},{d:'p',n:'App de seguimiento',s:'Descargá Habitica (gratis) o Streaks para iOS — gamifica tus hábitos',t:'habitica.com'},{d:'p',n:'El ciclo del hábito',s:'Señal → Rutina → Recompensa. Identifica tus hábitos negativos con este modelo.',t:'Tarea'},{d:'p',n:'Desafío 21 días',s:'Elige UN hábito nuevo esta semana. Solo uno. Registralo aquí en Angie.',t:'Compromiso'}]},
+  metas:{i:'🎯',bg:'linear-gradient(135deg,#E67E22,#CA6F1E)',sub:'MÓDULO 3 · NIVEL 1',sc:'#D35400',tit:'Metas Claras y Propósito',desc:'Una meta sin fecha es solo un sueño. Aprende el método SMART y cómo conectar tus metas diarias con tu visión de largo plazo — el camino de Q.0 a Q.1,000,000.',tags:[{t:'Completa Hábitos',b:'#FEF0E6',c:'#D35400'},{t:'+50 XP',b:'#FFFBEB',c:'#D97706'},{t:'Método SMART',b:'#ECFDF5',c:'#059669'}],xp:'⭐ +50 XP · Insignia Visionario',btn:'Iniciar módulo ▶',bc:'mbv',st:'libre',
+    fs:[{d:'p',n:'Método SMART explicado',s:'Específica, Medible, Alcanzable, Relevante, con Tiempo. Tarea: escribe 3 metas SMART.',t:'Tarea hoy'},{d:'p',n:'Tu meta de 90 días',s:'¿Qué querés lograr en 90 días? Escríbelo, ponle fecha, compártelo en Angie.',t:'Compromiso'},{d:'p',n:'Libro: Los 4 Acuerdos',s:'Miguel Ruiz — amazon.com · Cambia tu forma de relacionarte con tus metas',t:'Q.70'},{d:'p',n:'Vision Board digital',s:'Canva.com (gratis) — crea tu tablero visual de metas en 15 minutos',t:'canva.com'},{d:'p',n:'Revisión semanal',s:'Cada domingo: ¿avancé hacia mi meta esta semana? Sí/No + próximo paso.',t:'Hábito semanal'},{d:'p',n:'Conectar con tu Nivel 2',s:'¿Cuál habilidad del Nivel 2 te acerca más a tu meta principal? Márcala.',t:'Reflexión'}]},
+  mentalidad:{i:'🧠',bg:'linear-gradient(135deg,#1ABC9C,#148F77)',sub:'MÓDULO 2 · NIVEL 1',sc:'#0E8066',tit:'Mentalidad de Crecimiento',desc:'Tu mente es tu herramienta más poderosa — y también tu mayor obstáculo. Aprende a reprogramar creencias limitantes y adoptar la mentalidad que tienen las personas exitosas.',tags:[{t:'Completa Metas',b:'#E8F8F5',c:'#0E8066'},{t:'+50 XP',b:'#FFFBEB',c:'#D97706'},{t:'Mindset shift',b:'#EEF4FF',c:'#1565C0'}],xp:'⭐ +50 XP · Insignia Mentalidad',btn:'Iniciar módulo ▶',bc:'mbv',st:'libre',
+    fs:[{d:'p',n:'Fixed vs Growth Mindset',s:'Carol Dweck — la investigación que lo cambió todo. Video gratis en YouTube: busca "Mindset Carol Dweck TED"',t:'youtube.com'},{d:'p',n:'Identifica tus creencias limitantes',s:'Tarea: escribe 5 frases que te decís cuando algo falla. ¿Son ciertas?',t:'Reflexión'},{d:'p',n:'Libro: La Semana Laboral de 4 Horas',s:'Tim Ferriss — amazon.com · Reinventa cómo pensás sobre el trabajo y el tiempo',t:'Q.95'},{d:'p',n:'Afirmaciones con evidencia',s:'No "soy exitoso" — sino "tomé acción hoy". Las afirmaciones requieren acción.',t:'Técnica'},{d:'p',n:'Podcast recomendado',s:'How I Built This (NPR) — historias reales de fundadores. Gratis en Spotify.',t:'Spotify gratis'},{d:'p',n:'¡Nivel 1 completado!',s:'Al terminar este módulo desbloqueás el Nivel 2 y todas sus habilidades del mercado.',t:'🏆 Meta final'}]},
+  ingles:{i:'🗣️',bg:'linear-gradient(135deg,#3DA828,#1E7010)',sub:'GUÍA · NIVEL 2',sc:'#307018',tit:'Inglés Profesional A1→C1',desc:'12 becas gratuitas disponibles ahora. Te decimos exactamente dónde ir, qué beca usar y cómo certificarlo. Al completar desbloquea Call Center y Trabajo Remoto en el Nivel 3.',tags:[{t:'✅ Disponible',b:'#ECFDF5',c:'#059669'},{t:'12 Becas',b:'#EEF4FF',c:'#1565C0'},{t:'Q.6K-10K/mes',b:'#FFFBEB',c:'#D97706'}],xp:'⭐ +50 XP · Desbloquea rutas N3',btn:'Iniciar guía de Inglés 🗣️',bc:'mbv',st:'libre',
+    fs:[{d:'a',n:'Test de nivel gratis',s:'EF SET — efset.org/es · certificado A1-C2 reconocido mundialmente',t:'10 min'},{d:'p',n:'Nivel A1 — Principiante',s:'Duolingo (gratis) + Beca PROBEFI apps2.mineduc.gob.gt — internet + estipendio',t:'3-4 meses'},{d:'p',n:'Nivel A2 — Básico',s:'CALUSAC USAC redcalusac.usac.edu.gt — Q.140 bimestral + Beca MINECO',t:'3-4 meses'},{d:'p',n:'Nivel B1 — Intermedio',s:'Beca TELUS becas.speakenglishglobal.com/becas-telus — empleo incluido al terminar',t:'4-6 meses'},{d:'p',n:'Niveles B2 y C1 — Avanzado',s:'SEGEPLAN becas.segeplan.gob.gt + americanenglish.state.gov/open (USA gratis)',t:'6-12 meses'},{d:'p',n:'Certificación internacional',s:'TOEIC — reconocido por TELUS, Concentrix, Allied Global. Costo ~Q.400',t:'Examen final'}]},
+  excel:{i:'📊',bg:'linear-gradient(135deg,#1878D8,#0848A8)',sub:'GUÍA · NIVEL 2',sc:'#1060C0',tit:'Excel Básico a Avanzado',desc:'La habilidad más pedida en el mercado laboral. Microsoft Learn oficial gratis + certificación MOS reconocida mundialmente. Al completar desbloquea Freelance de Datos en el Nivel 3.',tags:[{t:'Disponible',b:'#EEF4FF',c:'#1565C0'},{t:'Q.6K-12K/mes',b:'#FFFBEB',c:'#D97706'},{t:'Cert. MOS',b:'#ECFDF5',c:'#059669'}],xp:'💎 +2 Gemas · Desbloquea Freelance N3',btn:'Ver guía de Excel 📊',bc:'mba',st:'libre',
+    fs:[{d:'p',n:'Excel Básico — Gratis',s:'Microsoft Learn learn.microsoft.com/es/training/paths/beginner-excel',t:'4-6 sem'},{d:'p',n:'Excel Intermedio',s:'INTECAP intecap.edu.gt · cursos gratuitos o subsidiados + YouTube curado',t:'4-6 sem'},{d:'p',n:'Excel Avanzado',s:'Tablas dinámicas, VLOOKUP, Power Query, macros básicas — YouTube "Excel con Ricardo"',t:'6-8 sem'},{d:'p',n:'Práctica real',s:'Tarea: crea un presupuesto personal y un dashboard de gastos en Excel',t:'Proyecto'},{d:'p',n:'Certificación MOS Excel',s:'Microsoft Office Specialist — certiport.pearsonvue.com — reconocido por empresas GT',t:'Examen'},{d:'p',n:'Conectar con Power BI',s:'Excel avanzado es la base de Power BI — el siguiente módulo disponible',t:'Siguiente'}]},
+  ventas:{i:'💰',bg:'linear-gradient(135deg,#E74C3C,#C0392B)',sub:'GUÍA · NIVEL 2',sc:'#C0392B',tit:'Ventas y Negociación',desc:'La habilidad más valiosa del mercado: vender. No importa qué carrera tengas — quien sabe vender siempre tiene trabajo y siempre puede generar ingresos por su cuenta.',tags:[{t:'Completa Inglés/Excel',b:'#FDEDEC',c:'#C0392B'},{t:'Q.5K-15K/mes',b:'#FFFBEB',c:'#D97706'},{t:'+60 XP',b:'#ECFDF5',c:'#059669'}],xp:'⭐ +60 XP · Insignia Vendedor',btn:'Iniciar guía de Ventas 💰',bc:'mbn',st:'libre',
+    fs:[{d:'p',n:'Los 5 pasos de una venta',s:'Prospección → Contacto → Presentación → Cierre → Seguimiento. Memoriza este flujo.',t:'Fundamento'},{d:'p',n:'Libro: Cómo Ganar Amigos',s:'Dale Carnegie — amazon.com · El libro de ventas más vendido de la historia. Q.75.',t:'Esencial'},{d:'p',n:'Certificado HubSpot Ventas',s:'academy.hubspot.com/es — 100% gratis, reconocido por empresas internacionales',t:'hubspot.com'},{d:'p',n:'Técnica SPIN Selling',s:'Preguntas de Situación, Problema, Implicación, Necesidad — busca en YouTube gratis',t:'Técnica pro'},{d:'p',n:'Práctica: vende algo esta semana',s:'Tarea: vende algo — lo que sea. Un servicio, un objeto. Practica el cierre.',t:'Desafío real'},{d:'p',n:'Conectar con Ventas Bilingüe N3',s:'Inglés + Ventas = Ejecutivo Bilingüe Q.5,000-15,000/mes en el Nivel 3',t:'Siguiente paso'}]},
+  marketing:{i:'📱',bg:'linear-gradient(135deg,#8E44AD,#6C3483)',sub:'GUÍA · NIVEL 2',sc:'#7D3C98',tit:'Marketing Digital',desc:'El marketing digital es el megáfono de cualquier negocio o carrera. Aprende a atraer clientes, crear contenido que vende y usar las herramientas que usan las empresas grandes.',tags:[{t:'Completa Inglés/Excel',b:'#F4ECF7',c:'#7D3C98'},{t:'Q.4K-10K/mes',b:'#FFFBEB',c:'#D97706'},{t:'+55 XP',b:'#ECFDF5',c:'#059669'}],xp:'⭐ +55 XP · Insignia Digital',btn:'Iniciar guía de Marketing 📱',bc:'mbv',st:'libre',
+    fs:[{d:'p',n:'Fundamentos de Marketing Digital',s:'Google Digital Garage — learndigital.withgoogle.com/digitalgarage — gratis y certificado',t:'Gratis'},{d:'p',n:'Redes sociales para negocios',s:'Meta Blueprint — facebook.com/business/learn — certificación oficial Meta. Gratis.',t:'Gratis'},{d:'p',n:'Email Marketing',s:'Mailchimp Academy — mailchimp.com/resources/mailchimp-101 — gratis en español',t:'Gratis'},{d:'p',n:'SEO Básico',s:'Google Search Central — developers.google.com/search/docs — cómo aparecer en Google',t:'Técnico'},{d:'p',n:'Libro: Marketing 4.0',s:'Philip Kotler — amazon.com · El estándar del marketing moderno. Q.120.',t:'Referencia'},{d:'p',n:'Proyecto real',s:'Tarea: crea una página de Facebook Business y una campaña de Q.50 para practicar',t:'Desafío'}]},
+  powerbi:{i:'📈',bg:'linear-gradient(135deg,#F39C12,#D68910)',sub:'GUÍA · NIVEL 2',sc:'#D68910',tit:'Power BI y Análisis de Datos',desc:'Power BI es la herramienta de análisis más demandada en empresas medianas y grandes. Quien transforma datos en decisiones siempre tiene trabajo bien pagado.',tags:[{t:'Requiere Excel',b:'#FEF9E7',c:'#D68910'},{t:'Q.7K-15K/mes',b:'#FFFBEB',c:'#D97706'},{t:'+65 XP',b:'#EEF4FF',c:'#1565C0'}],xp:'💎 +3 Gemas · Power BI Analyst',btn:'Iniciar guía de Power BI 📈',bc:'mba',st:'libre',
+    fs:[{d:'p',n:'Power BI Desktop — Gratis',s:'Descarga en microsoft.com/power-bi — versión Desktop completamente gratis',t:'Instalar hoy'},{d:'p',n:'Curso oficial Microsoft',s:'learn.microsoft.com/es/training/powerbi — ruta completa gratis y certificada',t:'Gratis'},{d:'p',n:'Conectar datos reales',s:'Tarea: conecta un Excel con datos a Power BI y crea tu primer gráfico',t:'Práctica'},{d:'p',n:'Certificación PL-300',s:'Microsoft Certified: Power BI Data Analyst — learn.microsoft.com/certifications',t:'Certificación'},{d:'p',n:'Proyecto portfolio',s:'Crea un dashboard de ventas o finanzas reales — esto es lo que pedirán en entrevistas',t:'Portfolio'},{d:'p',n:'Conectar con Freelance N3',s:'Con Power BI + Excel podés cobrar Q.1,500-3,000 por dashboard freelance',t:'Nivel 3'}]},
+  conta:{i:'🧮',bg:'linear-gradient(135deg,#2ECC71,#1A8A4A)',sub:'GUÍA · NIVEL 2',sc:'#1A8A4A',tit:'Contabilidad Básica',desc:'La contabilidad es el idioma del dinero. Entender ingresos, egresos, balances y flujo de caja te da ventaja en cualquier trabajo y es esencial para cualquier negocio propio.',tags:[{t:'Disponible',b:'#E8F8F0',c:'#1A8A4A'},{t:'Q.4K-9K/mes',b:'#FFFBEB',c:'#D97706'},{t:'+50 XP',b:'#EEF4FF',c:'#1565C0'}],xp:'⭐ +50 XP · Desbloquea Contable Freelance N3',btn:'Iniciar guía de Contabilidad 🧮',bc:'mbv',st:'libre',
+    fs:[{d:'p',n:'Conceptos fundamentales',s:'Activo, Pasivo, Capital, Ingresos, Egresos. Video gratis: YouTube "Contabilidad básica desde cero"',t:'Base'},{d:'p',n:'Curso gratuito INTECAP',s:'intecap.edu.gt — cursos de contabilidad básica subsidiados o gratuitos',t:'intecap.edu.gt'},{d:'p',n:'Coursera — Contabilidad',s:'coursera.org/learn/accounting · Universidad Johns Hopkins — gratis auditoría',t:'Gratis'},{d:'p',n:'Software contable',s:'Wave Accounting — waveapps.com — 100% gratis para llevar cuentas de pymes',t:'Herramienta'},{d:'p',n:'Libro: Contabilidad para no Contadores',s:'amazon.com — guía práctica para entender estados financieros sin ser contador',t:'Q.80'},{d:'p',n:'Conectar con N3',s:'Con este módulo desbloqueás Asistente Contable Freelance — Q.3,500-9,000/mes',t:'Siguiente paso'}]},
+  callcenter:{i:'🎧',bg:'linear-gradient(135deg,#3DA828,#1E7010)',sub:'RUTA · NIVEL 3',sc:'#307018',tit:'Call Center Bilingüe',desc:'Con inglés B1+ aplicá a cuentas premium con entrenamiento pagado. La ruta más directa al primer gran ingreso formal.',tags:[{t:'Inglés B1+',b:'#ECFDF5',c:'#059669'},{t:'Q.6,000–10,000/mes',b:'#FFFBEB',c:'#D97706'},{t:'Empleo en 30 días',b:'#EEF4FF',c:'#1565C0'}],xp:'⭐ +100 XP al conseguir empleo',btn:'Ver empresas donde aplicar 🎧',bc:'mbv',st:'libre',
+    fs:[{d:'a',n:'Test de inglés gratis',s:'EF SET — efset.org/es (mínimo B1)',t:'10 min'},{d:'p',n:'TELUS International',s:'telusinternational.com/careers',t:'Hoy'},{d:'p',n:'Concentrix',s:'jobs.concentrix.com',t:'Hoy'},{d:'p',n:'Allied Global',s:'alliedglobal.com/recruitment',t:'Hoy'},{d:'p',n:'Entrenamiento y primer salario',s:'Entrenamiento pagado — 30 días',t:'30 días'}]},
+  freelance:{i:'📊',bg:'linear-gradient(135deg,#1878D8,#0848A8)',sub:'RUTA · NIVEL 3',sc:'#1060C0',tit:'Freelance de Datos y Reportes',desc:'Con Excel ofrecé dashboards a empresas. Primer proyecto: Q.500-1,500. Con 5 clientes regulares llegás a Q.8,000-12,000 al mes.',tags:[{t:'Excel requerido',b:'#EEF4FF',c:'#1565C0'},{t:'Q.4,000–12,000/mes',b:'#FFFBEB',c:'#D97706'},{t:'Sin capital inicial',b:'#ECFDF5',c:'#059669'}],xp:'💎 +3 Gemas al cerrar primer cliente',btn:'Ver plataformas 📊',bc:'mba',st:'libre',
+    fs:[{d:'d',n:'Portfolio en Workana',s:'workana.com — 2-3 proyectos de muestra',t:'✓ Hecho'},{d:'a',n:'Primera propuesta enviada',s:'Q.500-800 por primer dashboard',t:'En curso'},{d:'p',n:'Computrabajo GT',s:'gt.computrabajo.com — analista Jr.',t:'Esta semana'},{d:'p',n:'Escalar a 5 clientes',s:'Q.8,000-12,000/mes constante',t:'3-6 meses'}]},
+  remoto:{i:'🌍',bg:'linear-gradient(135deg,#D84028,#980808)',sub:'RUTA · NIVEL 3',sc:'#C03018',tit:'Trabajo Remoto Internacional',desc:'Con inglés B2+ trabajá para empresas de USA o Europa desde donde estés. USD 500-2,000/mes — el mayor salto de ingresos de todo el camino.',tags:[{t:'Inglés B2+',b:'#FFF0E8',c:'#C03018'},{t:'USD 500–2,000/mes',b:'#FFFBEB',c:'#D97706'},{t:'Desde tu casa',b:'#ECFDF5',c:'#059669'}],xp:'⭐ +150 XP al conseguir primer contrato',btn:'Ver plataformas remotas 🌍',bc:'mbn',st:'libre',
+    fs:[{d:'p',n:'Certificar inglés B2',s:'EF SET o TOEIC — mínimo B2',t:'Primero'},{d:'p',n:'Remote.co',s:'remote.co/remote-jobs',t:'Esta semana'},{d:'p',n:'WeWorkRemotely',s:'weworkremotely.com',t:'Esta semana'},{d:'p',n:'Upwork / Fiverr',s:'USD 10-25/hora freelance',t:'Esta semana'},{d:'p',n:'Primer contrato firmado',s:'USD 500-1,500/mes desde tu casa',t:'1-3 meses'}]},
+  ventasbil:{i:'💼',bg:'linear-gradient(135deg,#E74C3C,#A93226)',sub:'RUTA · NIVEL 3',sc:'#C0392B',tit:'Ejecutivo de Ventas Bilingüe',desc:'Inglés + Ventas = la combinación más poderosa del mercado laboral. Salario base Q.5,000-9,000 más comisiones sin techo. Esta ruta tiene el mayor potencial de ingresos del Nivel 3.',tags:[{t:'Inglés B1+ requerido',b:'#FDEDEC',c:'#C0392B'},{t:'Q.5,000-15,000/mes',b:'#FFFBEB',c:'#D97706'},{t:'Comisiones ilimitadas',b:'#ECFDF5',c:'#059669'}],xp:'⭐ +120 XP al conseguir tu primer contrato',btn:'Ver empresas donde aplicar 💼',bc:'mbn',st:'libre',
+    fs:[{d:'p',n:'Perfil requerido',s:'Inglés B1+ certificado (EF SET o TOEIC) + conocimientos básicos en ventas',t:'Requisito'},{d:'p',n:'Banco Industrial',s:'bi.com.gt/empleo — ventas de productos financieros bilingüe, Q.5,000 base + comisiones',t:'Aplicar'},{d:'p',n:'Claro Guatemala',s:'claro.com.gt — ejecutivos ventas bilingüe, Q.5,500-8,000 + bonos mensuales',t:'Aplicar'},{d:'p',n:'TELUS International',s:'telusinternational.com/careers — ventas B2B bilingüe, Q.7,000-12,000',t:'Aplicar'},{d:'p',n:'LinkedIn Jobs',s:'linkedin.com/jobs — busca Sales Executive Guatemala — muchas opciones activas',t:'Esta semana'},{d:'p',n:'Certificado HubSpot Ventas',s:'academy.hubspot.com/es — certificación gratuita reconocida por empresas',t:'Gratis'}]},
+  contfreelance:{i:'🧮',bg:'linear-gradient(135deg,#2ECC71,#1A8A4A)',sub:'RUTA · NIVEL 3',sc:'#1A8A4A',tit:'Asistente Contable Freelance',desc:'Miles de pymes necesitan ayuda contable pero no pueden pagar un contador de planta. Vos sos la solución: servicios freelance desde Q.1,500 por cliente. Con 4 clientes regulares tenés Q.6,000-9,000 al mes desde tu casa.',tags:[{t:'Contabilidad requerida',b:'#E8F8F0',c:'#1A8A4A'},{t:'Q.3,500-9,000/mes',b:'#FFFBEB',c:'#D97706'},{t:'Sin jefe',b:'#EEF4FF',c:'#1565C0'}],xp:'💎 +3 Gemas al conseguir primer cliente',btn:'Ver cómo conseguir clientes 🧮',bc:'mbv',st:'libre',
+    fs:[{d:'p',n:'Tu primer servicio',s:'Declaración mensual SAT + libro ingresos/egresos · Precio sugerido: Q.800-1,500/mes',t:'Servicio 1'},{d:'p',n:'Dónde conseguir clientes',s:'Workana workana.com · Computrabajo gt.computrabajo.com · Facebook grupos pymes GT',t:'Esta semana'},{d:'p',n:'Registro SAT como freelance',s:'sat.gob.gt — registrate como contribuyente individual para poder facturar legalmente',t:'Obligatorio'},{d:'p',n:'Herramienta gratuita',s:'Wave Accounting waveapps.com — lleva la contabilidad de tus clientes 100% gratis',t:'Gratis'},{d:'p',n:'Tabla de precios',s:'Q.800-1,200: declaración mensual · Q.1,500-2,500: contabilidad completa pyme',t:'Referencia'},{d:'p',n:'Meta: 4 clientes',s:'4 clientes a Q.1,500 = Q.6,000/mes constante trabajando desde tu casa',t:'90 días'}]}};
+
+// ══ LEVEL DEFINITIONS ══════════════════════════════════════
+var LEVELS = {
+  n1:{
+    label:'Nivel 1 — Mentalidad y Fundamentos',
+    roofCol:'#D83020', wallCol:'#FFF2D0',
+    pathColor:'#D8B030',
+    path:[[.50,.87],[.37,.71],[.63,.56],[.66,.43],[.30,.31],[.52,.20]],
+    nodes:[
+      {k:'accion', x:.50,y:.87,type:'to',em:'🚀',bdg:'bo',bt:'✓ Completado',nm:'Accion Masiva',done:true},
+      {k:'entorno',x:.37,y:.71,type:'ta',em:'🤝',bdg:'ba',bt:'▶ Jugar',nm:'Entorno'},
+      {k:'persistencia',x:.63,y:.56,type:'tv',em:'🏔️',bdg:'bv',bt:'▶ Iniciar',nm:'Persistencia'},
+      {k:'habitos',x:.66,y:.43,type:'tg',em:'⚙️',bdg:'bg',bt:'▶ Ver módulo',nm:'Hábitos',lk:false},
+      {k:'metas',x:.30,y:.31,type:'tg',em:'🎯',bdg:'bg',bt:'▶ Ver módulo',nm:'Metas',lk:false},
+      {k:'mentalidad',x:.52,y:.20,type:'tg',em:'🧠',bdg:'bg',bt:'▶ Ver módulo',nm:'Mentalidad',lk:false}
+    ]
+  },
+  n2:{
+    label:'Nivel 2 — Habilidades del Mercado',
+    roofCol:'#1848B0', wallCol:'#E8F0FF',
+    pathColor:'#D8B030',
+    path:[[.50,.87],[.32,.71],[.67,.57],[.30,.43],[.67,.30],[.35,.19]],
+    nodes:[
+      {k:'ingles',  x:.50,y:.87,type:'tv',em:'🗣️',bdg:'bv',bt:'▶ Iniciar',nm:'Inglés Profesional',sal:'Q.6K–10K / mes',dots:['a','p','p','p','p']},
+      {k:'excel',   x:.32,y:.71,type:'ta',em:'📊',bdg:'ba',bt:'▶ Jugar',nm:'Excel Avanzado',sal:'Q.6K–12K / mes'},
+      {k:'ventas',  x:.67,y:.57,type:'tn',em:'💰',bdg:'bn',bt:'▶ Ver módulo',nm:'Ventas',lk:false},
+      {k:'marketing',x:.30,y:.43,type:'tv',em:'📱',bdg:'bv',bt:'▶ Ver módulo',nm:'Marketing',lk:false},
+      {k:'powerbi', x:.67,y:.30,type:'to',em:'📈',bdg:'bo',bt:'▶ Ver módulo',nm:'Power BI',lk:false},
+      {k:'conta',   x:.35,y:.19,type:'ta',em:'🧮',bdg:'ba',bt:'▶ Ver módulo',nm:'Contabilidad',lk:false}
+    ]
+  },
+  n3:{
+    label:'Nivel 3 — Primer Ingreso Real',
+    roofCol:'#C07010', wallCol:'#FFF8E0',
+    pathColor:'#D8B030',
+    path:[[.50,.87],[.30,.71],[.68,.56],[.28,.42],[.60,.29]],
+    nodes:[
+      {k:'callcenter',x:.50,y:.87,type:'tv',em:'🎧',bdg:'bv',bt:'▶ Iniciar',nm:'Call Center Bilingüe',sal:'Q.6,000–10,000 / mes',dots:['a','p','p','p']},
+      {k:'freelance', x:.30,y:.71,type:'ta',em:'📊',bdg:'ba',bt:'▶ Jugar',nm:'Freelance de Datos',sal:'Q.4,000–12,000 / mes',dots:['d','a','p','p']},
+      {k:'remoto',    x:.68,y:.56,type:'tn',em:'🌍',bdg:'bn',bt:'▶ Explorar',nm:'Trabajo Remoto',sal:'USD 500–2,000 / mes'},
+      {k:'ventasbil', x:.28,y:.42,type:'tn',em:'💼',bdg:'bn',bt:'▶ Ver ruta',nm:'Ventas Bilingüe',lk:false,sal:'Q.5K–15K/mes'},
+      {k:'contfreelance',x:.60,y:.29,type:'tv',em:'🧮',bdg:'bv',bt:'▶ Ver ruta',nm:'Contable Freelance',lk:false,sal:'Q.3.5K–9K/mes'}
+    ]
+  }
+};
+
+// ══ CANVAS DRAWING ══════════════════════════════════════════
+function drawScene(cid, ld) {
+  var cv = document.getElementById(cid);
+  if (!cv) return;
+  var W = cv.parentElement.clientWidth;
+  var H = Math.round(W * 1.75);
+  cv.width = W; cv.height = H;
+  cv.style.height = H + 'px';
+  cv.parentElement.style.minHeight = H + 'px';
+  var ctx = cv.getContext('2d');
+  var p = W / 430;
+
+  // ── SKY ──
+  var sg = ctx.createLinearGradient(0,0,0,H*.62);
+  sg.addColorStop(0,'#3EC2F5'); sg.addColorStop(.5,'#8AD8FF'); sg.addColorStop(1,'#C8EEFF');
+  ctx.fillStyle = sg; ctx.fillRect(0,0,W,H*.62);
+
+  // ── GROUND ──
+  var gg = ctx.createLinearGradient(0,H*.52,0,H);
+  gg.addColorStop(0,'#72D050'); gg.addColorStop(.25,'#52B030');
+  gg.addColorStop(.6,'#329018'); gg.addColorStop(1,'#186808');
+  ctx.fillStyle = gg;
+  ctx.beginPath();
+  ctx.ellipse(W/2,H*.62,W*.7,H*.13,0,0,Math.PI*2);
+  ctx.fill();
+  ctx.fillRect(0,H*.62,W,H);
+
+  // ── SUN ──
+  var sx=W*.80,sy=H*.07,sr=30*p;
+  var sunG=ctx.createRadialGradient(sx-5*p,sy-5*p,0,sx,sy,sr);
+  sunG.addColorStop(0,'#FFFFF0'); sunG.addColorStop(.5,'#FFE840'); sunG.addColorStop(1,'#FFB800');
+  ctx.beginPath(); ctx.arc(sx,sy,sr,0,Math.PI*2);
+  ctx.fillStyle=sunG; ctx.shadowColor='rgba(255,220,0,.55)'; ctx.shadowBlur=24*p; ctx.fill(); ctx.shadowBlur=0;
+  // rays
+  ctx.strokeStyle='rgba(255,230,0,.3)'; ctx.lineWidth=2*p;
+  for(var ri=0;ri<8;ri++){var a=ri*Math.PI/4;ctx.beginPath();ctx.moveTo(sx+Math.cos(a)*(sr+5*p),sy+Math.sin(a)*(sr+5*p));ctx.lineTo(sx+Math.cos(a)*(sr+14*p),sy+Math.sin(a)*(sr+14*p));ctx.stroke();}
+
+  // ── MOUNTAINS ──
+  function mtn(x,w,h,c,snow){
+    var mg=ctx.createLinearGradient(x,H*.56-h,x+w,H*.56);
+    mg.addColorStop(0,lighten(c,22)); mg.addColorStop(1,c);
+    ctx.fillStyle=mg;
+    ctx.beginPath(); ctx.moveTo(x,H*.56); ctx.lineTo(x+w/2,H*.56-h); ctx.lineTo(x+w,H*.56); ctx.closePath(); ctx.fill();
+    if(snow){ctx.fillStyle='rgba(255,255,255,.82)';ctx.beginPath();ctx.moveTo(x+w/2,H*.56-h);ctx.lineTo(x+w/2-w*.13,H*.56-h+h*.3);ctx.lineTo(x+w/2+w*.13,H*.56-h+h*.3);ctx.closePath();ctx.fill();}
+  }
+  function lighten(hex,amt){var r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return '#'+clamp(r+amt)+clamp(g+amt)+clamp(b+amt);}
+  function clamp(v){return Math.min(255,Math.max(0,Math.round(v))).toString(16).padStart(2,'0');}
+  mtn(-W*.04,W*.4,H*.22,'#7A9ABF',true); mtn(W*.18,W*.44,H*.28,'#6A8AAF',true);
+  mtn(W*.54,W*.36,H*.20,'#8AAACF',false); mtn(W*.70,W*.44,H*.26,'#7A9ABF',true);
+
+  // ── CLOUDS ──
+  function cloud(cx,cy,sc){
+    ctx.fillStyle='rgba(255,255,255,.9)'; ctx.shadowColor='rgba(0,0,0,.06)'; ctx.shadowBlur=5;
+    function blob(ox,oy,r){ctx.beginPath();ctx.arc(cx+ox*sc*p,cy+oy*sc*p,r*sc*p,0,Math.PI*2);ctx.fill();}
+    blob(0,0,18);blob(-22,4,14);blob(22,4,14);blob(-10,-13,12);blob(10,-12,12);
+    ctx.shadowBlur=0;
+  }
+  cloud(W*.13,H*.08,1); cloud(W*.60,H*.06,.85); cloud(W*.87,H*.12,.72);
+
+  // ── RIVER (left side) ──
+  ctx.save(); ctx.translate(W*.04,H*.42); ctx.rotate(0.18);
+  var rg=ctx.createLinearGradient(-18*p,0,18*p,0); rg.addColorStop(0,'#1880B8'); rg.addColorStop(.5,'#40B8E8'); rg.addColorStop(1,'#1880B8');
+  ctx.fillStyle=rg; ctx.shadowColor='rgba(0,80,160,.2)'; ctx.shadowBlur=8*p;
+  ctx.beginPath(); ctx.ellipse(0,0,18*p,130*p,0,0,Math.PI*2); ctx.fill();
+  ctx.shadowBlur=0;
+  // ripples
+  ctx.strokeStyle='rgba(255,255,255,.28)'; ctx.lineWidth=1.5*p;
+  for(var wi=0;wi<5;wi++){ctx.beginPath();ctx.moveTo(-10*p,-100*p+wi*40*p);ctx.quadraticCurveTo(5*p,-80*p+wi*40*p,10*p,-60*p+wi*40*p);ctx.stroke();}
+  ctx.restore();
+
+  // ── TREES ──
+  function tree(tx,ty,sz,c1,c2){
+    // trunk
+    var tg=ctx.createLinearGradient(tx,ty,tx,ty+18*sz*p); tg.addColorStop(0,'#6A3A18'); tg.addColorStop(1,'#4A2008');
+    ctx.fillStyle=tg; ctx.fillRect(tx-4*sz*p,ty,8*sz*p,18*sz*p);
+    // canopy layers (3)
+    [[0,0,24,c1],[0,-14,20,c2],[0,-26,14,lighten(c1,20)]].forEach(function(l){
+      var cg=ctx.createRadialGradient(tx+l[0],ty+l[1]*sz*p,0,tx+l[0],ty+l[1]*sz*p,l[2]*sz*p);
+      cg.addColorStop(0,lighten(l[3],28)); cg.addColorStop(1,l[3]);
+      ctx.fillStyle=cg; ctx.beginPath(); ctx.arc(tx+l[0],ty+l[1]*sz*p,l[2]*sz*p,0,Math.PI*2); ctx.fill();
+    });
+    // gloss
+    ctx.fillStyle='rgba(255,255,255,.18)'; ctx.beginPath(); ctx.arc(tx-8*sz*p,ty-24*sz*p,7*sz*p,0,Math.PI*2); ctx.fill();
+  }
+  var tc1='#5ABB3A',tc2='#3A9A20';
+  tree(W*.06,H*.56,1.1,tc1,tc2); tree(W*.12,H*.63,.9,tc2,tc1);
+  tree(W*.88,H*.53,1.2,tc1,tc2); tree(W*.93,H*.61,.88,tc2,tc1);
+  tree(W*.04,H*.72,.75,tc1,tc2); tree(W*.96,H*.70,.7,tc2,tc1);
+
+  // ── HOUSE ──
+  function house(hx,hy,roofC,wallC){
+    var s=p;
+    // shadow under
+    ctx.fillStyle='rgba(0,0,0,.12)'; ctx.beginPath(); ctx.ellipse(hx,hy+40*s,28*s,7*s,0,0,Math.PI*2); ctx.fill();
+    // wall
+    var wg=ctx.createLinearGradient(hx-24*s,hy,hx+24*s,hy+40*s); wg.addColorStop(0,wallC); wg.addColorStop(1,lighten(wallC,-25));
+    ctx.fillStyle=wg; ctx.beginPath(); ctx.roundRect(hx-24*s,hy,48*s,40*s,[0,0,4*s,4*s]); ctx.fill();
+    // roof
+    var rg2=ctx.createLinearGradient(hx-28*s,hy+2*s,hx+28*s,hy+2*s); rg2.addColorStop(0,lighten(roofC,15)); rg2.addColorStop(1,roofC);
+    ctx.fillStyle=rg2; ctx.beginPath(); ctx.moveTo(hx-28*s,hy+2*s); ctx.lineTo(hx,hy-24*s); ctx.lineTo(hx+28*s,hy+2*s); ctx.closePath(); ctx.fill();
+    // roof highlight
+    ctx.fillStyle='rgba(255,255,255,.2)'; ctx.beginPath(); ctx.moveTo(hx-8*s,hy+2*s); ctx.lineTo(hx,hy-24*s); ctx.lineTo(hx+4*s,hy-16*s); ctx.lineTo(hx-2*s,hy+2*s); ctx.closePath(); ctx.fill();
+    // door
+    ctx.fillStyle='#7A3810'; ctx.beginPath(); ctx.roundRect(hx-7*s,hy+22*s,14*s,18*s,[7*s,7*s,0,0]); ctx.fill();
+    // windows
+    [[hx-15*s,hy+8*s],[hx+6*s,hy+8*s]].forEach(function(wn){
+      var wng=ctx.createLinearGradient(wn[0],wn[1],wn[0]+10*s,wn[1]+10*s); wng.addColorStop(0,'#90DCFF'); wng.addColorStop(1,'#3898C8');
+      ctx.fillStyle=wng; ctx.beginPath(); ctx.roundRect(wn[0],wn[1],10*s,10*s,2*s); ctx.fill();
+      ctx.strokeStyle='rgba(160,130,60,.7)'; ctx.lineWidth=1.5*s; ctx.stroke();
+    });
+  }
+  house(W*.86,H*.68,ld.roofCol,ld.wallCol);
+
+  // ── BUSHES ──
+  function bush(bx,by,r,c){
+    var bg2=ctx.createRadialGradient(bx-r*.3,by-r*.3,0,bx,by,r*p);
+    bg2.addColorStop(0,lighten(c,30)); bg2.addColorStop(1,c);
+    ctx.fillStyle=bg2;
+    [[0,0,r],[r*.7*p,r*.2*p,r*.7],[-(r*.7*p),r*.2*p,r*.7]].forEach(function(b){ctx.beginPath();ctx.arc(bx+b[0],by+b[1],b[2]*p,0,Math.PI*2);ctx.fill();});
+  }
+  bush(W*.20,H*.70,14,'#3A9820'); bush(W*.78,H*.68,12,'#2A8010'); bush(W*.35,H*.73,10,'#4AB028'); bush(W*.55,H*.75,11,'#389018');
+
+  // ── FLOWERS ──
+  function flower(fx,fy,pc){
+    var fr=4.5*p;
+    ctx.fillStyle=pc;
+    for(var fi=0;fi<5;fi++){var a=fi*Math.PI*2/5;ctx.beginPath();ctx.ellipse(fx+Math.cos(a)*fr*1.7,fy+Math.sin(a)*fr*1.7,fr,fr*.65,a,0,Math.PI*2);ctx.fill();}
+    ctx.fillStyle='#FFE840'; ctx.beginPath(); ctx.arc(fx,fy,fr,0,Math.PI*2); ctx.fill();
+  }
+  flower(W*.16,H*.71,'#FF8888'); flower(W*.26,H*.70,'#FF88CC'); flower(W*.70,H*.71,'#FFAA44'); flower(W*.62,H*.74,'#88CCFF'); flower(W*.42,H*.73,'#AAFFAA');
+
+  // ── TOP GOAL BANNER ──
+  ctx.save();
+  ctx.fillStyle='rgba(0,0,0,.3)'; ctx.beginPath(); ctx.roundRect(W*.5-80*p,H*.015,160*p,28*p,12*p); ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.92)';
+  ctx.font='bold '+Math.round(12*p)+'px "Baloo 2",sans-serif';
+  ctx.textAlign='center'; ctx.fillText(ld.label,W/2,H*.015+18*p);
+  ctx.restore();
+
+  // ── PATH (camino dorado, estilo imagen) ──
+  var pts = ld.path.map(function(pt){ return [pt[0]*W, pt[1]*H]; });
+  function drawPath(pts,col,lw,dash){
+    ctx.beginPath(); ctx.moveTo(pts[0][0],pts[0][1]);
+    for(var i=1;i<pts.length;i++){
+      var mx=(pts[i-1][0]+pts[i][0])/2, my=(pts[i-1][1]+pts[i][1])/2;
+      ctx.quadraticCurveTo(pts[i-1][0],pts[i-1][1],mx,my);
+    }
+    ctx.lineTo(pts[pts.length-1][0],pts[pts.length-1][1]);
+    ctx.strokeStyle=col; ctx.lineWidth=lw*p; ctx.lineCap='round'; ctx.lineJoin='round';
+    ctx.setLineDash(dash||[]); ctx.stroke(); ctx.setLineDash([]);
+  }
+  drawPath(pts,'rgba(0,0,0,.18)',42);          // shadow
+  drawPath(pts,'#B88838',38);                  // dark border
+  drawPath(pts,'#E8B030',32);                  // base gold
+  drawPath(pts,'#F5C518',26);                  // bright gold
+  drawPath(pts,'rgba(255,248,180,.45)',14);     // top highlight
+  drawPath(pts,'rgba(255,255,255,.32)',6,[16*p,12*p]); // center dashes
+
+  // update nodes layer size
+  var nl = document.getElementById(cid.replace('c','nl'));
+  if(nl){ nl.style.height=H+'px'; nl.style.position='absolute'; nl.style.top='0'; nl.style.left='0'; nl.style.width='100%'; }
+}
+
+// ══ BUILD NODES ══════════════════════════════════════════════
+function buildNodes(lid) {
+  var ld = LEVELS[lid];
+  var cv = document.getElementById(lid.replace('n','c'));
+  var W = cv.width, H = cv.height, p = W/430;
+  var nl = document.getElementById(lid.replace('n','nl'));
+  nl.innerHTML = '';
+  nl.style.height = H+'px';
+
+  var SZ = Math.round(88*p);
+
+  ld.nodes.forEach(function(nd) {
+    var div = document.createElement('div');
+    div.className = 'nd '+nd.type;
+    div.style.left = Math.round(nd.x*W)+'px';
+    div.style.top  = Math.round(nd.y*H)+'px';
+    div.onclick = function(){ abrir(nd.k); };
+
+    // circle wrapper (for done badge)
+    var wrap = document.createElement('div');
+    wrap.style.position = 'relative'; wrap.style.display = 'inline-block';
+
+    var nc = document.createElement('div');
+    nc.className = 'nc';
+    nc.style.width = SZ+'px'; nc.style.height = SZ+'px';
+    nc.style.borderWidth = Math.round(4*p)+'px';
+
+    var em = document.createElement('span');
+    em.textContent = nd.em;
+    em.style.fontSize = Math.round(p*40)+'px';
+    em.style.position = 'relative'; em.style.zIndex = '1';
+    em.style.filter = 'drop-shadow(0 2px 4px rgba(0,0,0,.25))';
+    nc.appendChild(em);
+
+    if(nd.lk){
+      var lk = document.createElement('div');
+      lk.className = 'nc-lock';
+      lk.style.fontSize = Math.round(p*26)+'px';
+      lk.textContent = '🔒';
+      nc.appendChild(lk);
+    }
+
+    wrap.appendChild(nc);
+
+    if(nd.done){
+      var dn = document.createElement('div');
+      dn.className = 'nc-done'; dn.textContent = '✓';
+      wrap.appendChild(dn);
+    }
+    div.appendChild(wrap);
+
+    // label
+    var lbl = document.createElement('div');
+    lbl.className = 'nd-lbl';
+    lbl.style.marginTop = Math.round(6*p)+'px';
+
+    var nm = document.createElement('span');
+    nm.className = 'nd-name'; nm.textContent = nd.nm;
+    nm.style.fontSize = Math.round(p*12.5)+'px';
+    nm.style.maxWidth = Math.round(SZ*1.1)+'px';
+    lbl.appendChild(nm);
+
+    var bdg = document.createElement('span');
+    bdg.className = 'nd-bdg '+nd.bdg;
+    bdg.style.fontSize = Math.round(p*9.5)+'px';
+    bdg.textContent = nd.bt;
+    lbl.appendChild(bdg);
+
+    if(nd.sal){
+      var sl = document.createElement('span');
+      sl.className = 'nd-sal'; sl.textContent = nd.sal;
+      sl.style.fontSize = Math.round(p*9)+'px';
+      lbl.appendChild(sl);
+    }
+    if(nd.dots){
+      var dw = document.createElement('div');
+      dw.className = 'nd-dots';
+      nd.dots.forEach(function(dc){
+        var d = document.createElement('div');
+        d.className = 'dot '+dc;
+        d.style.width = Math.round(p*9)+'px';
+        d.style.height = Math.round(p*9)+'px';
+        dw.appendChild(d);
+      });
+      lbl.appendChild(dw);
+    }
+    div.appendChild(lbl);
+    nl.appendChild(div);
+  });
+}
+
+// ══ MODAL ════════════════════════════════════════════════════
+function abrir(k){
+  var m=MODS[k]; if(!m)return; cur=k;
+  document.getElementById('mIco').style.background=m.bg;
+  document.getElementById('mIco').textContent=m.i;
+  document.getElementById('mSub').textContent=m.sub; document.getElementById('mSub').style.color=m.sc;
+  document.getElementById('mTit').textContent=m.tit;
+  document.getElementById('mQ').textContent='"'+(Q[k]||'')+'"';
+  document.getElementById('mDesc').textContent=m.desc;
+  document.getElementById('mXP').textContent=m.xp;
+  var fw=document.getElementById('mFW'),fe=document.getElementById('mFas');
+  if(m.fs&&m.fs.length){
+    fw.style.display='block'; fe.innerHTML='';
+    m.fs.forEach(function(f){
+      var r=document.createElement('div'); r.className='fr';
+      var s=f.d==='d'?'✓':f.d==='a'?'▶':'○';
+      r.innerHTML='<div class="fd '+f.d+'">'+s+'</div><div style="flex:1"><div class="fn">'+f.n+'</div><div class="fs2">'+f.s+'</div></div><div class="ft2">'+f.t+'</div>';
+      fe.appendChild(r);
+    });
+  } else fw.style.display='none';
+  var tg=document.getElementById('mTags'); tg.innerHTML='';
+  m.tags.forEach(function(t){var e=document.createElement('span');e.className='m-tag';e.style.background=t.b;e.style.color=t.c;e.textContent=t.t;tg.appendChild(e);});
+  document.getElementById('mBtn').textContent=m.btn;
+  document.getElementById('mBtn').className='m-btn '+m.bc;
+  document.getElementById('mo').className='mo show';
+}
+function cMod(){ document.getElementById('mo').className='mo'; }
+function accion(){
+  if(!cur||MODS[cur].st==='lock')return;
+  cMod(); G.mon+=50; G.xp+=50;
+  if(MODS[cur].bc==='mba') G.gem+=2;
+  if(G.comp.indexOf(cur)<0) G.comp.push(cur);
+  actUI(); showXP(); confetti();
+  var msg = cur==='ingles' ? '¡El inglés abre Call Center y Trabajo Remoto! 🗣️'
+           : cur==='excel'  ? '¡Con Excel desbloqueás el Freelance de Datos! 📊'
+           : '¡Imparable! ¡Seguí así! 🚀';
+  showToast('🎉','¡Módulo completado!',msg);
+}
+function actUI(){
+  document.getElementById('eM').textContent=G.mon.toLocaleString();
+  document.getElementById('eG').textContent=G.gem;
+  document.getElementById('eX').textContent=G.xp;
+  // sync progress panel
+  var pct=Math.min(100,Math.round(G.comp.length/9*100));
+  var ids=['prgXP','prgGem','prgMods','prgPct','prgBar','perfXP','perfGem','perfMon'];
+  function se(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
+  se('prgXP',G.xp); se('prgGem',G.gem); se('prgMods',G.comp.length);
+  se('prgPct',pct+'%'); se('perfXP',G.xp); se('perfGem',G.gem); se('perfMon',G.mon.toLocaleString());
+  var bar=document.getElementById('prgBar'); if(bar) bar.style.width=pct+'%';
+}
+function showXP(){ var a=document.createElement('div'); a.className='xpfl'; a.textContent='+50 XP ⭐'; a.style.cssText='position:fixed;left:50%;top:44%;transform:translateX(-50%);'; document.body.appendChild(a); setTimeout(function(){if(a.parentNode)a.parentNode.removeChild(a);},1700); }
+function showToast(ic,ti,su){ document.getElementById('tIco').textContent=ic; document.getElementById('tTit').textContent=ti; document.getElementById('tSub').textContent=su; var t=document.getElementById('toast'); t.className='toast on'; setTimeout(function(){t.className='toast';},4000); }
+function confetti(){
+  var w=document.getElementById('cW');
+  var cs=['#F5C518','#FF5020','#3DA828','#1878D8','#E04080','#9050E8','#FFE020'];
+  for(var i=0;i<30;i++){(function(i){setTimeout(function(){
+    var c=document.createElement('div'); c.className='conf';
+    c.style.left=Math.random()*100+'vw';
+    c.style.background=cs[Math.floor(Math.random()*cs.length)];
+    c.style.width=(8+Math.random()*8)+'px'; c.style.height=(8+Math.random()*8)+'px';
+    c.style.animationDuration=(1.8+Math.random()*2)+'s';
+    c.style.borderRadius=Math.random()>.5?'50%':'2px';
+    w.appendChild(c); setTimeout(function(){if(c.parentNode)c.parentNode.removeChild(c);},4500);
+  },i*65);})(i);}
+}
+
+// ══ TABS ═════════════════════════════════════════════════════
+var drawn = {};
+function xtab(btn, id){
+  document.querySelectorAll('.tab').forEach(function(t){t.className='tab';});
+  btn.className='tab on';
+  // hide all scenes and panels
+  ['n1','n2','n3'].forEach(function(n){
+    var el=document.getElementById(n);
+    if(el) el.style.display='none';
+  });
+  hideAllPanels();
+  var el=document.getElementById(id);
+  if(el){ el.style.display='block'; }
+  // draw canvas only once it's visible (clientWidth > 0)
+  if(!drawn[id]){
+    var cid=id.replace('n','c');
+    drawScene(cid, LEVELS[id]);
+    buildNodes(id);
+    drawn[id]=true;
+  }
+}
+
+// ══ PANELS ═══════════════════════════════════════════════════
+function hideAllPanels(){
+  var ids=['panelLec','panelProg','panelPerf','panelCalc','panelCom','panelCert'];
+  ids.forEach(function(id){var e=document.getElementById(id);if(e)e.style.display='none';});
+}
+function showPanel(id){
+  // hide scenes
+  ['n1','n2','n3'].forEach(function(n){var e=document.getElementById(n);if(e)e.style.display='none';});
+  hideAllPanels();
+  var p=document.getElementById(id);if(p)p.style.display='block';
+  window.scrollTo(0,0);
+}
+function cerrarPanel(id){
+  hideAllPanels();
+  // restore active tab scene
+  var activeTab=document.querySelector('.tab.on');
+  if(activeTab){
+    var txt=activeTab.textContent||'';
+    var lid=txt.indexOf('1')>=0?'n1':txt.indexOf('2')>=0?'n2':'n3';
+    var el=document.getElementById(lid);if(el)el.style.display='block';
+  } else {
+    var e=document.getElementById('n1');if(e)e.style.display='block';
+  }
+  // restore nav
+  document.querySelectorAll('.nbt').forEach(function(b,i){b.className=i===0?'nbt on':'nbt';});
+}
+
+// ══ NAV ══════════════════════════════════════════════════════
+function xnav(btn){
+  document.querySelectorAll('.nbt').forEach(function(b){b.className='nbt';});
+  btn.className='nbt on';
+  var idx=Array.from(document.querySelectorAll('.nbt')).indexOf(btn);
+  if(idx===0){ cerrarPanel('none'); }
+  else if(idx===1){ showPanel('panelLec'); }
+  else if(idx===2){ showPanel('panelProg'); }
+  else if(idx===3){ showPanel('panelPerf'); }
+}
+
+// ══ INIT ═════════════════════════════════════════════════════
+function initAll(){
+  // Only draw visible canvas (n1) on init; others drawn on demand
+  drawn={};
+  drawScene('c1', LEVELS['n1']);
+  buildNodes('n1');
+  drawn['n1']=true;
+}
+var rt; window.addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(function(){drawn={};initAll();},220);});
+initAll();
+</script>
+
+<!-- ══ PANEL CALCULADORA ══ -->
+<div id="panelCalc" style="display:none;position:fixed;inset:0;z-index:150;background:#F0F8F0;overflow-y:auto;padding-bottom:80px;">
+  <div style="background:linear-gradient(180deg,#2E9A1A,#3DB828);padding:12px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10;border-bottom:4px solid #196008;">
+    <button onclick="cerrarPanel('panelCalc')" style="width:36px;height:36px;border-radius:10px;background:rgba(0,0,0,0.2);border:none;color:white;font-size:1.1rem;cursor:pointer;">←</button>
+    <div style="font-family:'Baloo 2',sans-serif;font-weight:800;font-size:1rem;color:white;">📊 Calculadora de Ingresos</div>
+  </div>
+  <div style="margin:14px;background:linear-gradient(135deg,#196008,#1050A0);border-radius:18px;padding:18px;border:1px solid rgba(255,255,255,0.2);">
+    <div style="font-size:2rem;margin-bottom:8px;">💡</div>
+    <div style="font-family:'Baloo 2',sans-serif;font-size:1.1rem;font-weight:800;color:white;margin-bottom:5px;">¿Cuánto podés ganar?</div>
+    <div style="font-size:0.8rem;color:rgba(255,255,255,0.78);line-height:1.6;">Ajustá los sliders según las habilidades que querés desarrollar y mirá tu proyección real de ingresos.</div>
+  </div>
+
+  <div style="margin:0 14px 14px;background:white;border-radius:16px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,0.06);border:1.5px solid #C8E6C8;">
+    <div style="font-family:'Baloo 2',sans-serif;font-size:0.85rem;font-weight:800;color:#196008;margin-bottom:14px;">🗓️ Meses de dedicación</div>
+    <input type="range" class="calc-slider" id="slMeses" min="1" max="24" value="6" oninput="calcUpdate()">
+    <div style="display:flex;justify-content:space-between;font-size:0.7rem;color:#94A3B8;margin-top:4px;"><span>1 mes</span><span id="slMesesVal" style="font-weight:800;color:#196008;">6 meses</span><span>24 meses</span></div>
+  </div>
+
+  <div style="margin:0 14px 14px;background:white;border-radius:16px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,0.06);border:1.5px solid #C8E6C8;">
+    <div style="font-family:'Baloo 2',sans-serif;font-size:0.85rem;font-weight:800;color:#196008;margin-bottom:14px;">💼 Habilidades a desarrollar</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+        <input type="checkbox" id="chIngles" onchange="calcUpdate()" style="width:18px;height:18px;accent-color:#196008;">
+        <span style="font-size:0.85rem;font-weight:700;color:#1A2A0A;">🗣️ Inglés Profesional <span style="color:#196008;font-weight:800;">+Q.4,000/mes</span></span>
+      </label>
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+        <input type="checkbox" id="chExcel" onchange="calcUpdate()" style="width:18px;height:18px;accent-color:#196008;">
+        <span style="font-size:0.85rem;font-weight:700;color:#1A2A0A;">📊 Excel / Power BI <span style="color:#196008;font-weight:800;">+Q.3,500/mes</span></span>
+      </label>
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+        <input type="checkbox" id="chVentas" onchange="calcUpdate()" style="width:18px;height:18px;accent-color:#196008;">
+        <span style="font-size:0.85rem;font-weight:700;color:#1A2A0A;">💰 Ventas y Negociación <span style="color:#196008;font-weight:800;">+Q.5,000/mes</span></span>
+      </label>
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+        <input type="checkbox" id="chMarketing" onchange="calcUpdate()" style="width:18px;height:18px;accent-color:#196008;">
+        <span style="font-size:0.85rem;font-weight:700;color:#1A2A0A;">📱 Marketing Digital <span style="color:#196008;font-weight:800;">+Q.3,000/mes</span></span>
+      </label>
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+        <input type="checkbox" id="chRemoto" onchange="calcUpdate()" style="width:18px;height:18px;accent-color:#196008;">
+        <span style="font-size:0.85rem;font-weight:700;color:#1A2A0A;">🌍 Trabajo Remoto Int. <span style="color:#196008;font-weight:800;">+Q.8,000/mes</span></span>
+      </label>
+    </div>
+  </div>
+
+  <div id="calcResult" class="calc-result" style="margin:0 14px 14px;">
+    <span class="calc-sub">Con tu plan actual, en <span id="rMeses">6</span> meses podés ganar</span>
+    <span class="calc-big" id="rMensual">Q.0 / mes</span>
+    <span class="calc-sub">Acumulado en ese período</span>
+    <span class="calc-big" id="rAcum" style="font-size:1.5rem;">Q.0</span>
+    <div class="calc-breakdown" id="rBreakdown"></div>
+    <div style="margin-top:14px;font-size:0.72rem;color:rgba(255,255,255,0.65);line-height:1.5;">* Proyección basada en salarios promedio del mercado. Los resultados reales dependen de tu dedicación y contexto.</div>
+  </div>
+</div>
+
+<!-- ══ PANEL COMUNIDAD ══ -->
+<div id="panelCom" style="display:none;position:fixed;inset:0;z-index:150;background:#F0F8F0;overflow-y:auto;padding-bottom:80px;">
+  <div style="background:linear-gradient(180deg,#2E9A1A,#3DB828);padding:12px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10;border-bottom:4px solid #196008;">
+    <button onclick="cerrarPanel('panelCom')" style="width:36px;height:36px;border-radius:10px;background:rgba(0,0,0,0.2);border:none;color:white;font-size:1.1rem;cursor:pointer;">←</button>
+    <div style="font-family:'Baloo 2',sans-serif;font-weight:800;font-size:1rem;color:white;">💬 Comunidad Angie</div>
+  </div>
+  <div style="margin:14px 14px 10px;background:linear-gradient(135deg,#196008,#1050A0);border-radius:18px;padding:16px;border:1px solid rgba(255,255,255,0.2);">
+    <div style="font-size:1.8rem;margin-bottom:6px;">🤝</div>
+    <div style="font-family:'Baloo 2',sans-serif;font-size:1rem;font-weight:800;color:white;margin-bottom:4px;">Aprendé con otros</div>
+    <div style="font-size:0.78rem;color:rgba(255,255,255,0.78);line-height:1.5;">Compartí tu avance, hacé preguntas y motivá a otros en su camino.</div>
+  </div>
+
+  <!-- Tabs de comunidad -->
+  <div style="display:flex;margin:0 14px 12px;background:#E8F4E8;border-radius:12px;padding:4px;gap:4px;">
+    <button id="comTab1" onclick="comTab(1)" style="flex:1;padding:8px;border-radius:9px;border:none;background:#196008;color:white;font-family:'Baloo 2',sans-serif;font-size:0.78rem;font-weight:800;cursor:pointer;">🏆 Logros</button>
+    <button id="comTab2" onclick="comTab(2)" style="flex:1;padding:8px;border-radius:9px;border:none;background:transparent;color:#196008;font-family:'Baloo 2',sans-serif;font-size:0.78rem;font-weight:800;cursor:pointer;">❓ Preguntas</button>
+    <button id="comTab3" onclick="comTab(3)" style="flex:1;padding:8px;border-radius:9px;border:none;background:transparent;color:#196008;font-family:'Baloo 2',sans-serif;font-size:0.78rem;font-weight:800;cursor:pointer;">💡 Tips</button>
+  </div>
+
+  <!-- Input nuevo post -->
+  <div style="margin:0 14px 12px;" class="post-input-wrap">
+    <textarea class="post-input" id="postInput" placeholder="Compartí tu avance, pregunta o tip..."></textarea>
+    <button class="post-send" onclick="enviarPost()">Publicar en la comunidad ✨</button>
+  </div>
+
+  <!-- Feed -->
+  <div id="comFeed" style="margin:0 14px;"></div>
+</div>
+
+<!-- ══ PANEL CERTIFICADOS ══ -->
+<div id="panelCert" style="display:none;position:fixed;inset:0;z-index:150;background:#F0F8F0;overflow-y:auto;padding-bottom:80px;">
+  <div style="background:linear-gradient(180deg,#2E9A1A,#3DB828);padding:12px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10;border-bottom:4px solid #196008;">
+    <button onclick="cerrarPanel('panelCert')" style="width:36px;height:36px;border-radius:10px;background:rgba(0,0,0,0.2);border:none;color:white;font-size:1.1rem;cursor:pointer;">←</button>
+    <div style="font-family:'Baloo 2',sans-serif;font-weight:800;font-size:1rem;color:white;">🏆 Mis Certificados</div>
+  </div>
+  <div style="margin:14px 14px 10px;background:linear-gradient(135deg,#196008,#1050A0);border-radius:18px;padding:16px;border:1px solid rgba(255,255,255,0.2);">
+    <div style="font-size:1.8rem;margin-bottom:6px;">🎓</div>
+    <div style="font-family:'Baloo 2',sans-serif;font-size:1rem;font-weight:800;color:white;margin-bottom:4px;">Tus certificados de Angie</div>
+    <div style="font-size:0.78rem;color:rgba(255,255,255,0.78);line-height:1.5;">Completá módulos para desbloquear certificados descargables. Compartílos en LinkedIn.</div>
+  </div>
+
+  <!-- Lista de certificados -->
+  <div class="cert-list" id="certList"></div>
+
+  <!-- Certificado preview (se muestra al hacer click en uno) -->
+  <div id="certPreview" style="display:none;">
+    <div class="cert-wrap">
+      <div class="cert-border">
+        <div class="cert-inner">
+          <div class="cert-logo">🌟 Angie</div>
+          <div class="cert-title">Certificado de Logro</div>
+          <div class="cert-main">Este certificado acredita que</div>
+          <div class="cert-name" id="certNombre">Tu Nombre</div>
+          <div class="cert-main">completó exitosamente</div>
+          <div class="cert-module" id="certModulo">Módulo</div>
+          <div class="cert-desc" id="certDesc">Descripción del módulo completado.</div>
+          <div class="cert-seal">🏆</div>
+          <div class="cert-date" id="certFecha">Fecha de emisión</div>
+          <button class="cert-download" onclick="descargarCert()">⬇️ Descargar Certificado PDF</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
